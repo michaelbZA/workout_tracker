@@ -46,15 +46,15 @@
 
 
     <h2>Exercises</h2>
-    {# ... (existing exercises list code remains the same) ... #}
     {% if exercises %}
         <ul>
-            {% for exercise in exercises %}
-                <li>
-                    <strong>{{ exercise.name }}</strong>
-                    {% if exercise.category %}({{ exercise.category }}){% endif %}
-                    {% if exercise.description %}<p><small>{{ exercise.description }}</small></p>{% endif %}
-                </li>
+        {% for exercise in exercises %}
+            <li>
+                <strong>{{ exercise.name }}</strong>
+                {% if exercise.category %}({{ exercise.category }}){% endif %}
+                - <a href="{{ url_for('main.exercise_progress', exercise_id=exercise.id) }}">View Progress</a>
+                {% if exercise.description %}<p><small>{{ exercise.description }}</small></p>{% endif %}
+            </li>
             {% else %}
                 <li>No exercises added yet. <a href="{{ url_for('main.add_exercise') }}">Add one now!</a></li>
             {% endfor %}

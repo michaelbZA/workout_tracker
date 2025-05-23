@@ -5,6 +5,8 @@ from app.models import Exercise, WorkoutLog
 from app.forms import ExerciseForm, WorkoutLogForm
 from datetime import datetime, timezone
 from sqlalchemy import func # For using functions like MAX
+from flask import jsonify # For potentially sending JSON data later, not strictly needed for this approach but good to have.
+import json # To safely pass data to JavaScript
 
 bp = Blueprint('main', __name__)
 
@@ -57,7 +59,6 @@ def index():
                            workout_logs=workout_logs,
                            personal_bests=personal_bests) # Pass PBs to template
 
-# ... (add_exercise and log_workout routes remain the same) ...
 @bp.route('/add_exercise', methods=['GET', 'POST'])
 def add_exercise():
     form = ExerciseForm()
@@ -98,3 +99,54 @@ def log_workout():
             flash('Selected exercise not found.', 'error')
 
     return render_template('log_workout.html', title='Log Workout', form=form)
+
+@bp.route('/exercise/<int:exercise_id>/progress')
+def exercise_progress(exercise_id):
+    exercise = Exercise.query.get_or_404(exercise_id)
+    logs = WorkoutLog.query.filter_by(exercise_id=exercise.id).order_by(WorkoutLog.date.asc()).all()
+
+    chart_data = {
+        'labels': [], # Dates
+        'datasets': []
+    }
+
+    dataset_label = ""
+    data_points = []
+
+    # Determine chart type based on category (simple heuristic)
+    is_cardio = exercise.category and 'cardio' in exercise.category.lower()
+
+    if is_cardio:
+        dataset_label = 'Distance (km)'
+        for log in logs:
+            if log.distance_km is not None:
+                chart_data['labels'].append(log.date.strftime('%Y-%m-%d'))
+                data_points.append(log.distance_km)
+        # You could add another dataset for duration if desired
+        # e.g., duration_data_points = [log.duration_minutes for log in logs if log.duration_minutes is not None]
+    else: # Assume strength/weight-based
+        dataset_label = 'Weight Lifted'
+        for log in logs:
+            if log.weight is not None:
+                # To avoid too many points if multiple sets on same day,
+                # you might want to aggregate (e.g., max weight per day).
+                # For now, plotting each log entry with weight.
+                chart_data['labels'].append(log.date.strftime('%Y-%m-%d %H:%M')) # More granular for multiple entries per day
+                data_points.append(log.weight)
+
+    if data_points: # Only add dataset if there's data
+        chart_data['datasets'].append({
+            'label': dataset_label,
+            'data': data_points,
+            'fill': False,
+            'borderColor': 'rgb(75, 192, 192)',
+            'tension': 0.1
+        })
+
+    # Safely pass chart_data to template by converting to JSON string
+    chart_data_json = json.dumps(chart_data)
+
+    return render_template('exercise_progress.html',
+                           title=f"{exercise.name} Progress",
+                           exercise=exercise,
+                           chart_data_json=chart_data_json)
