@@ -1,0 +1,35 @@
+/* app/static/css/style.css */
+body {
+    font-family: sans-serif;
+    margin: 20px;
+    line-height: 1.6;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+header nav {
+    margin-bottom: 20px;
+}
+
+header nav a {
+    margin-right: 15px;
+    text-decoration: none;
+    color: #007bff;
+}
+
+header nav a:hover {
+    text-decoration: underline;
+}
+
+main {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+footer {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 0.9em;
+    color: #666;
+}
