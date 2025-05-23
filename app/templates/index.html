@@ -3,7 +3,50 @@
 {% block content %}
     <h1>Welcome to Your Workout Tracker!</h1>
 
+    {# --- Personal Bests Section --- #}
+    <h2>Personal Bests</h2>
+    {% if personal_bests %}
+        <ul>
+        {% for ex in exercises %} {# Iterate through exercises to maintain order and access name #}
+            {% if ex.id in personal_bests %}
+                <li>
+                    <strong>{{ ex.name }}</strong>
+                    {% set pb = personal_bests[ex.id] %} {# Get the PB data for this exercise #}
+
+                    {% if pb.max_weight %}
+                        <div>
+                            Max Weight: {{ pb.max_weight.value }}
+                            {% if pb.max_weight.reps is not none %} (for {{ pb.max_weight.reps }} reps
+                                {% if pb.max_weight.sets is not none %}
+                                , {{ pb.max_weight.sets }} sets
+                                {% endif %}
+                            ){% endif %}
+                            <small> on {{ pb.max_weight.date.strftime('%Y-%m-%d') }}</small>
+                        </div>
+                    {% endif %}
+
+                    {% if pb.max_distance %}
+                         <div>
+                            Longest Distance: {{ pb.max_distance.value }} km
+                            {% if pb.max_distance.duration is not none %}
+                                (in {{ pb.max_distance.duration }} min)
+                            {% endif %}
+                            <small> on {{ pb.max_distance.date.strftime('%Y-%m-%d') }}</small>
+                        </div>
+                    {% endif %}
+                </li>
+            {% endif %}
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No Personal Bests calculated yet. Keep logging workouts!</p>
+    {% endif %}
+    <hr>
+    {# --- End Personal Bests Section --- #}
+
+
     <h2>Exercises</h2>
+    {# ... (existing exercises list code remains the same) ... #}
     {% if exercises %}
         <ul>
             {% for exercise in exercises %}
@@ -22,6 +65,7 @@
 
     <hr>
     <h2>Workout Logs</h2>
+    {# ... (existing workout logs list code remains the same) ... #}
     {% if workout_logs %}
         <ul>
             {% for log in workout_logs %}
