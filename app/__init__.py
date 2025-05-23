@@ -1,22 +1,20 @@
 # app/__init__.py
 from flask import Flask
 import os
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
-# We'll add database initialisation here later
-# from flask_sqlalchemy import SQLAlchemy
-# from flask_migrate import Migrate
-
-# db = SQLAlchemy()
-# migrate = Migrate()
+# Create database extension objects BEFORE the create_app function
+db = SQLAlchemy()
+migrate = Migrate()
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY='dev', # CHANGE THIS for production!
-        DATABASE=os.path.join(app.instance_path, 'workout_tracker.sqlite'),
-        # Add SQLAlchemy configurations later
-        # SQLALCHEMY_DATABASE_URI='sqlite:///' + os.path.join(app.instance_path, 'workout_tracker.sqlite'),
-        # SQLALCHEMY_TRACK_MODIFICATIONS=False,
+        # DATABASE config for SQLite (used by Flask-SQLAlchemy)
+        SQLALCHEMY_DATABASE_URI='sqlite:///' + os.path.join(app.instance_path, 'workout_tracker.sqlite'),
+        SQLALCHEMY_TRACK_MODIFICATIONS=False, # Disables a feature that signals the application every time a change is about to be made in the database.
     )
 
     if test_config is None:
@@ -29,21 +27,14 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    # Initialize extensions here later
-    # db.init_app(app)
-    # migrate.init_app(app, db)
+    # Initialize extensions WITH the app object
+    db.init_app(app)
+    migrate.init_app(app, db) # Initialize Flask-Migrate
 
-    # Remove the old /hello route from here
-    # @app.route('/hello')
-    # def hello():
-    #     return 'Hello, World!'
-
-    # Import and register the blueprint from routes.py
-    from . import routes  # This imports routes.py from the current package (app)
+    from . import routes
     app.register_blueprint(routes.bp)
 
-    # If you had other blueprints, you would register them here too
-    # from . import auth
-    # app.register_blueprint(auth.bp)
+    # Import models here so that Flask-Migrate can find them
+    from . import models
 
     return app
