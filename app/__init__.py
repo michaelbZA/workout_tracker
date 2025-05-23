@@ -3,6 +3,7 @@ from flask import Flask
 import os
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from datetime import datetime
 
 # Create database extension objects BEFORE the create_app function
 db = SQLAlchemy()
@@ -30,6 +31,11 @@ def create_app(test_config=None):
     # Initialize extensions WITH the app object
     db.init_app(app)
     migrate.init_app(app, db) # Initialize Flask-Migrate
+
+    # Add this context processor
+    @app.context_processor
+    def inject_now():
+        return {'now': datetime.utcnow()}
 
     from . import routes
     app.register_blueprint(routes.bp)

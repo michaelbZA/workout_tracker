@@ -14,10 +14,21 @@
     <header>
         <nav>
             <a href="{{ url_for('main.index') }}">Home</a>
+            <a href="{{ url_for('main.add_exercise') }}">Add Exercise</a>
             </nav>
     </header>
     <hr>
     <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flashes">
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
         {% block content %}{% endblock %}
     </main>
     <hr>
