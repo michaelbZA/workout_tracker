@@ -22,7 +22,35 @@
 
     <hr>
     <h2>Workout Logs</h2>
-    <p>Workout logs will appear here soon.</p>
-    {# We will add workout log display later #}
+    {% if workout_logs %}
+        <ul>
+            {% for log in workout_logs %}
+                <li>
+                    <strong>{{ log.exercise.name }}</strong> on {{ log.date.strftime('%Y-%m-%d %H:%M') }}
+                    <p>
+                        {% if log.sets is not none and log.reps is not none %}
+                            Sets: {{ log.sets }}, Reps: {{ log.reps }}
+                        {% endif %}
+                        {% if log.weight is not none %}
+                            , Weight: {{ log.weight }}
+                        {% endif %}
+                        {% if log.duration_minutes is not none %}
+                            , Duration: {{ log.duration_minutes }} min
+                        {% endif %}
+                        {% if log.distance_km is not none %}
+                            , Distance: {{ log.distance_km }} km
+                        {% endif %}
+                        {% if log.notes %}
+                            <br><small>Notes: {{ log.notes }}</small>
+                        {% endif %}
+                    </p>
+                </li>
+            {% else %}
+                 <li>No workouts logged yet. <a href="{{ url_for('main.log_workout') }}">Log one now!</a></li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No workouts logged yet. <a href="{{ url_for('main.log_workout') }}">Log one now!</a></p>
+    {% endif %}
 
 {% endblock %}
