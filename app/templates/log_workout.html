@@ -4,17 +4,24 @@
 <div class="container py-4">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
-            <div class="card">
+            <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
                     <h1 class="h3 mb-0">{{ title }}</h1>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ url_for('main.log_workout') }}" novalidate>
+                    <form method="POST" action="{{ url_for('workout.log') }}" novalidate class="needs-validation">
                         {{ form.hidden_tag() }}
 
-                        <div class="mb-3">
+                        <div class="mb-4">
                             {{ form.exercise.label(class="form-label") }}
-                            {{ form.exercise(class="form-select") }}
+                            <div class="input-group">
+                                {{ form.exercise(class="form-select", required=true, data-bs-toggle="tooltip", 
+                                    title="Select the exercise you performed") }}
+                                <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#quickAddExerciseModal">
+                                    <i class="bi bi-plus-lg"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">Select the exercise you performed</div>
                             {% for error in form.exercise.errors %}
                             <div class="invalid-feedback d-block">
                                 {{ error }}
@@ -22,63 +29,108 @@
                             {% endfor %}
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                {{ form.sets.label(class="form-label") }}
-                                {{ form.sets(class="form-control", size=5) }}
-                                {% for error in form.sets.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ error }}
-                                </div>
-                                {% endfor %}
+                        <div class="card mb-4" id="strengthSection">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Strength Training Details</h5>
+                                <i class="bi bi-info-circle" data-bs-toggle="tooltip" 
+                                   title="Enter your sets, reps, and weight for strength training exercises"></i>
                             </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        {{ form.sets.label(class="form-label") }}
+                                        {{ form.sets(class="form-control", size=5, min="1", max="20", 
+                                            placeholder="e.g., 3", required=false, data-bs-toggle="tooltip",
+                                            title="Number of sets performed") }}
+                                        <div class="form-text">Number of sets performed</div>
+                                        {% for error in form.sets.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ error }}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
 
-                            <div class="col-md-6 mb-3">
-                                {{ form.reps.label(class="form-label") }}
-                                {{ form.reps(class="form-control", size=5) }}
-                                {% for error in form.reps.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ error }}
+                                    <div class="col-md-6 mb-3">
+                                        {{ form.reps.label(class="form-label") }}
+                                        {{ form.reps(class="form-control", size=5, min="1", max="100", 
+                                            placeholder="e.g., 10", required=false, data-bs-toggle="tooltip",
+                                            title="Repetitions per set") }}
+                                        <div class="form-text">Repetitions per set</div>
+                                        {% for error in form.reps.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ error }}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
                                 </div>
-                                {% endfor %}
+
+                                <div class="mb-3">
+                                    {{ form.weight.label(class="form-label") }}
+                                    <div class="input-group">
+                                        {{ form.weight(class="form-control", size=10, min="0", step="0.1", 
+                                            placeholder="e.g., 20.5", required=false, data-bs-toggle="tooltip",
+                                            title="Weight used in your preferred unit") }}
+                                        <span class="input-group-text">kg</span>
+                                    </div>
+                                    <div class="form-text">Weight used in your preferred unit</div>
+                                    {% for error in form.weight.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                {{ form.weight.label(class="form-label") }}
-                                {{ form.weight(class="form-control", size=10) }}
-                                {% for error in form.weight.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ error }}
-                                </div>
-                                {% endfor %}
+                        <div class="card mb-4" id="cardioSection">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Cardio Details</h5>
+                                <i class="bi bi-info-circle" data-bs-toggle="tooltip" 
+                                   title="Enter your duration and distance for cardio exercises"></i>
                             </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        {{ form.duration_minutes.label(class="form-label") }}
+                                        <div class="input-group">
+                                            {{ form.duration_minutes(class="form-control", size=10, min="0", step="0.1", 
+                                                placeholder="e.g., 30", required=false, data-bs-toggle="tooltip",
+                                                title="Duration in minutes") }}
+                                            <span class="input-group-text">min</span>
+                                        </div>
+                                        <div class="form-text">Duration in minutes</div>
+                                        {% for error in form.duration_minutes.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ error }}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
 
-                            <div class="col-md-4 mb-3">
-                                {{ form.duration_minutes.label(class="form-label") }}
-                                {{ form.duration_minutes(class="form-control", size=10) }}
-                                {% for error in form.duration_minutes.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ error }}
+                                    <div class="col-md-6 mb-3">
+                                        {{ form.distance_km.label(class="form-label") }}
+                                        <div class="input-group">
+                                            {{ form.distance_km(class="form-control", size=10, min="0", step="0.01", 
+                                                placeholder="e.g., 5.2", required=false, data-bs-toggle="tooltip",
+                                                title="Distance in kilometers") }}
+                                            <span class="input-group-text">km</span>
+                                        </div>
+                                        <div class="form-text">Distance in kilometers</div>
+                                        {% for error in form.distance_km.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ error }}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
                                 </div>
-                                {% endfor %}
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                {{ form.distance_km.label(class="form-label") }}
-                                {{ form.distance_km(class="form-control", size=10) }}
-                                {% for error in form.distance_km.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ error }}
-                                </div>
-                                {% endfor %}
                             </div>
                         </div>
 
-                        <div class="mb-3">
+                        <div class="mb-4">
                             {{ form.notes.label(class="form-label") }}
-                            {{ form.notes(class="form-control", cols=35, rows=4) }}
+                            {{ form.notes(class="form-control", cols=35, rows=4, 
+                                placeholder="Add any notes about your workout (optional)", data-bs-toggle="tooltip",
+                                title="Optional notes about your workout") }}
+                            <div class="form-text">Optional notes about your workout</div>
                             {% for error in form.notes.errors %}
                             <div class="invalid-feedback d-block">
                                 {{ error }}
@@ -86,8 +138,9 @@
                             {% endfor %}
                         </div>
 
-                        <div class="d-grid">
-                            {{ form.submit(class="btn btn-primary") }}
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                            <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">Cancel</a>
                         </div>
                     </form>
                 </div>
@@ -95,4 +148,107 @@
         </div>
     </div>
 </div>
+
+<!-- Quick Add Exercise Modal -->
+<div class="modal fade" id="quickAddExerciseModal" tabindex="-1" aria-labelledby="quickAddExerciseModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="quickAddExerciseModalLabel">Quick Add Exercise</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="quickAddExerciseForm">
+                    <div class="mb-3">
+                        <label for="exerciseName" class="form-label">Exercise Name</label>
+                        <input type="text" class="form-control" id="exerciseName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="exerciseType" class="form-label">Exercise Type</label>
+                        <select class="form-select" id="exerciseType" required>
+                            <option value="strength">Strength Training</option>
+                            <option value="cardio">Cardio</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveQuickExercise">Save Exercise</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const exerciseSelect = document.querySelector('#exercise');
+    const strengthSection = document.querySelector('#strengthSection');
+    const cardioSection = document.querySelector('#cardioSection');
+    const quickAddForm = document.querySelector('#quickAddExerciseForm');
+    const saveQuickExerciseBtn = document.querySelector('#saveQuickExercise');
+
+    // Function to update form sections based on exercise type
+    function updateFormSections() {
+        const selectedOption = exerciseSelect.options[exerciseSelect.selectedIndex];
+        const isCardio = selectedOption.text.toLowerCase().includes('cardio');
+        
+        if (isCardio) {
+            strengthSection.style.display = 'none';
+            cardioSection.style.display = 'block';
+        } else {
+            strengthSection.style.display = 'block';
+            cardioSection.style.display = 'none';
+        }
+    }
+
+    // Initial update
+    updateFormSections();
+
+    // Update on exercise change
+    exerciseSelect.addEventListener('change', updateFormSections);
+
+    // Form validation
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+
+    // Quick add exercise functionality
+    saveQuickExerciseBtn.addEventListener('click', function() {
+        const exerciseName = document.querySelector('#exerciseName').value;
+        const exerciseType = document.querySelector('#exerciseType').value;
+        
+        if (exerciseName) {
+            // Add the new exercise to the select dropdown
+            const option = new Option(exerciseName, exerciseName);
+            exerciseSelect.add(option);
+            exerciseSelect.value = exerciseName;
+            
+            // Update form sections based on the new exercise type
+            updateFormSections();
+            
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(document.querySelector('#quickAddExerciseModal'));
+            modal.hide();
+            
+            // Reset the quick add form
+            quickAddForm.reset();
+        }
+    });
+
+    // Initialize tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
 {% endblock %}

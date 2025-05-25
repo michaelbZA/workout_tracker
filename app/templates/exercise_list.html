@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                    <li class="breadcrumb-item active">Exercises</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h1 class="h3 mb-0">Exercises</h1>
+                    <a href="{{ url_for('exercise.add') }}" class="btn btn-light btn-sm">
+                        <i class="bi bi-plus-lg"></i> Add Exercise
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" class="form-control" id="searchInput" placeholder="Search exercises...">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text">Filter</span>
+                                <select class="form-select" id="typeFilter">
+                                    <option value="all">All Types</option>
+                                    <option value="strength">Strength Training</option>
+                                    <option value="cardio">Cardio</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="sortable" data-sort="name">
+                                        Name <i class="bi bi-arrow-down-up"></i>
+                                    </th>
+                                    <th scope="col" class="sortable" data-sort="type">
+                                        Type <i class="bi bi-arrow-down-up"></i>
+                                    </th>
+                                    <th scope="col" class="sortable" data-sort="last_used">
+                                        Last Used <i class="bi bi-arrow-down-up"></i>
+                                    </th>
+                                    <th scope="col">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="exerciseTableBody">
+                                {% for exercise in exercises %}
+                                <tr class="exercise-row" data-type="{{ exercise.type }}">
+                                    <td>{{ exercise.name }}</td>
+                                    <td>
+                                        <span class="badge {% if exercise.type == 'strength' %}bg-primary{% else %}bg-success{% endif %}">
+                                            {{ exercise.type|title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ exercise.last_used.strftime('%Y-%m-%d') if exercise.last_used else 'Never' }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('exercise.view', id=exercise.id) }}" 
+                                               class="btn btn-outline-primary" 
+                                               data-bs-toggle="tooltip" 
+                                               title="View Progress">
+                                                <i class="bi bi-graph-up"></i>
+                                            </a>
+                                            <a href="{{ url_for('exercise.edit', id=exercise.id) }}" 
+                                               class="btn btn-outline-secondary" 
+                                               data-bs-toggle="tooltip" 
+                                               title="Edit Exercise">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <button type="button" 
+                                                    class="btn btn-outline-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deleteModal{{ exercise.id }}"
+                                                    title="Delete Exercise">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+
+                                        <!-- Delete Modal -->
+                                        <div class="modal fade" id="deleteModal{{ exercise.id }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Delete Exercise</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        Are you sure you want to delete "{{ exercise.name }}"? This action cannot be undone.
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <form action="{{ url_for('exercise.delete', id=exercise.id) }}" method="POST" class="d-inline">
+                                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const typeFilter = document.getElementById('typeFilter');
+    const tableBody = document.getElementById('exerciseTableBody');
+    const rows = tableBody.getElementsByClassName('exercise-row');
+    let currentSort = { column: 'name', direction: 'asc' };
+
+    // Search functionality
+    function filterExercises() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const typeValue = typeFilter.value;
+
+        Array.from(rows).forEach(row => {
+            const name = row.cells[0].textContent.toLowerCase();
+            const type = row.dataset.type;
+            const matchesSearch = name.includes(searchTerm);
+            const matchesType = typeValue === 'all' || type === typeValue;
+            row.style.display = matchesSearch && matchesType ? '' : 'none';
+        });
+    }
+
+    // Sorting functionality
+    function sortTable(column) {
+        const rows = Array.from(tableBody.getElementsByClassName('exercise-row'));
+        
+        if (currentSort.column === column) {
+            currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            currentSort.column = column;
+            currentSort.direction = 'asc';
+        }
+
+        rows.sort((a, b) => {
+            let aValue = a.cells[getColumnIndex(column)].textContent;
+            let bValue = b.cells[getColumnIndex(column)].textContent;
+
+            if (column === 'last_used') {
+                aValue = aValue === 'Never' ? '0000-00-00' : aValue;
+                bValue = bValue === 'Never' ? '0000-00-00' : bValue;
+            }
+
+            if (currentSort.direction === 'asc') {
+                return aValue.localeCompare(bValue);
+            } else {
+                return bValue.localeCompare(aValue);
+            }
+        });
+
+        rows.forEach(row => tableBody.appendChild(row));
+        updateSortIcons();
+    }
+
+    function getColumnIndex(column) {
+        switch(column) {
+            case 'name': return 0;
+            case 'type': return 1;
+            case 'last_used': return 2;
+            default: return 0;
+        }
+    }
+
+    function updateSortIcons() {
+        document.querySelectorAll('.sortable').forEach(header => {
+            const icon = header.querySelector('i');
+            if (header.dataset.sort === currentSort.column) {
+                icon.className = currentSort.direction === 'asc' ? 'bi bi-arrow-up' : 'bi bi-arrow-down';
+            } else {
+                icon.className = 'bi bi-arrow-down-up';
+            }
+        });
+    }
+
+    // Event listeners
+    searchInput.addEventListener('input', filterExercises);
+    typeFilter.addEventListener('change', filterExercises);
+    
+    document.querySelectorAll('.sortable').forEach(header => {
+        header.addEventListener('click', () => {
+            sortTable(header.dataset.sort);
+        });
+    });
+
+    // Initialize tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %} 

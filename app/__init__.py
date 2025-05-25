@@ -3,12 +3,14 @@ from flask import Flask
 import os
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_login import LoginManager
 from datetime import datetime
 import json
 
 # Create database extension objects BEFORE the create_app function
 db = SQLAlchemy()
 migrate = Migrate()
+login_manager = LoginManager()
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
@@ -32,6 +34,10 @@ def create_app(test_config=None):
     # Initialize extensions WITH the app object
     db.init_app(app)
     migrate.init_app(app, db) # Initialize Flask-Migrate
+    login_manager.init_app(app) # Initialize Flask-Login
+    login_manager.login_view = 'auth.login' # Set the login view
+    login_manager.login_message = 'Please log in to access this page.'
+    login_manager.login_message_category = 'info'
 
     # Add this context processor
     @app.context_processor
@@ -43,9 +49,10 @@ def create_app(test_config=None):
         return json.loads(value)
     app.jinja_env.filters['fromjson'] = fromjson_filter
 
-    from . import routes
-    app.register_blueprint(routes.bp)
-
+    # Import and register blueprints
+    from .routes import init_app as init_routes
+    init_routes(app)
+    
     # Import models here so that Flask-Migrate can find them
     from . import models
 

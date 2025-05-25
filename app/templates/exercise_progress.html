@@ -4,26 +4,91 @@
 <div class="container py-4">
     <div class="row">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h2 mb-0">{{ title }}</h1>
-                <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> Back to Home
-                </a>
-            </div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                    <li class="breadcrumb-item active">{{ exercise.name }} Progress</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
 
-            {% if chart_data_json and chart_data_json != '{}' %}
-                <div class="card">
-                    <div class="card-body">
-                        <div class="chart-container" style="position: relative; height: 60vh;">
-                            <canvas id="progressChart"></canvas>
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h1 class="h3 mb-0">{{ exercise.name }} Progress</h1>
+                    <div>
+                        <button class="btn btn-light btn-sm" id="toggleChartType">Toggle Chart Type</button>
+                        <button class="btn btn-light btn-sm ms-2" id="downloadData">Download Data</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="dateRange" class="form-label">Date Range</label>
+                                <select class="form-select" id="dateRange">
+                                    <option value="7">Last 7 days</option>
+                                    <option value="30">Last 30 days</option>
+                                    <option value="90">Last 90 days</option>
+                                    <option value="180">Last 6 months</option>
+                                    <option value="365">Last year</option>
+                                    <option value="all" selected>All time</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="dataType" class="form-label">Data Type</label>
+                                <select class="form-select" id="dataType">
+                                    <option value="raw">Raw Data</option>
+                                    <option value="trend">Trend Line</option>
+                                    <option value="both" selected>Both</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="height: 400px;">
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Statistics</h2>
+                </div>
+                <div class="card-body">
+                    <div id="statsContent">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            {% else %}
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle"></i> Not enough data to display a progress chart for this exercise yet.
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Personal Bests</h2>
                 </div>
-            {% endif %}
+                <div class="card-body">
+                    <div id="pbContent">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -31,66 +96,200 @@
 
 {% block scripts %}
 {{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-trendline"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const chartDataJson = {{ chart_data_json|safe }};
+document.addEventListener('DOMContentLoaded', function() {
+    const chartData = {{ chart_data_json|safe }};
+    const ctx = document.getElementById('progressChart').getContext('2d');
+    let chart = null;
+    let isLineChart = true;
 
-        if (chartDataJson && chartDataJson.datasets && chartDataJson.datasets.length > 0 && chartDataJson.datasets[0].data.length > 0) {
-            const ctx = document.getElementById('progressChart').getContext('2d');
-            if (!ctx) {
-                console.error('Failed to get canvas context. Check canvas ID.');
-                return;
-            }
+    // Function to format date for display
+    function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString();
+    }
 
-            new Chart(ctx, {
+    // Function to calculate statistics
+    function calculateStats(data) {
+        const values = data.map(point => point.y);
+        const stats = {
+            min: Math.min(...values),
+            max: Math.max(...values),
+            avg: values.reduce((a, b) => a + b, 0) / values.length,
+            total: values.length
+        };
+        return stats;
+    }
+
+    // Function to update statistics display
+    function updateStats(data) {
+        const stats = calculateStats(data);
+        const statsHtml = `
+            <div class="row text-center">
+                <div class="col-6 mb-3">
+                    <h3 class="h6 text-muted">Minimum</h3>
+                    <p class="h4">${stats.min.toFixed(2)}</p>
+                </div>
+                <div class="col-6 mb-3">
+                    <h3 class="h6 text-muted">Maximum</h3>
+                    <p class="h4">${stats.max.toFixed(2)}</p>
+                </div>
+                <div class="col-6">
+                    <h3 class="h6 text-muted">Average</h3>
+                    <p class="h4">${stats.avg.toFixed(2)}</p>
+                </div>
+                <div class="col-6">
+                    <h3 class="h6 text-muted">Total Entries</h3>
+                    <p class="h4">${stats.total}</p>
+                </div>
+            </div>
+        `;
+        document.getElementById('statsContent').innerHTML = statsHtml;
+    }
+
+    // Function to update personal bests display
+    function updatePBs(data) {
+        const maxValue = Math.max(...data.map(point => point.y));
+        const pbDate = data.find(point => point.y === maxValue).x;
+        
+        const pbHtml = `
+            <div class="text-center">
+                <h3 class="h6 text-muted">Best Performance</h3>
+                <p class="h4">${maxValue.toFixed(2)}</p>
+                <p class="text-muted">Achieved on ${formatDate(pbDate)}</p>
+            </div>
+        `;
+        document.getElementById('pbContent').innerHTML = pbHtml;
+    }
+
+    // Function to create/update chart
+    function createChart(data, showTrend = true) {
+        if (chart) {
+            chart.destroy();
+        }
+
+        const datasets = [{
+            label: chartData.datasets[0].label,
+            data: data,
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            tension: 0.1,
+            fill: true
+        }];
+
+        if (showTrend) {
+            datasets.push({
+                label: 'Trend',
+                data: data,
+                borderColor: 'rgb(255, 99, 132)',
+                borderDash: [5, 5],
+                fill: false,
                 type: 'line',
-                data: chartDataJson,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Value'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Date'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top'
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            padding: 10,
-                            titleFont: {
-                                size: 14
-                            },
-                            bodyFont: {
-                                size: 13
-                            }
-                        }
-                    },
-                    interaction: {
-                        mode: 'nearest',
-                        axis: 'x',
-                        intersect: false
-                    }
+                trendlineLinear: {
+                    colorMin: 'rgba(255, 99, 132, 0.2)',
+                    colorMax: 'rgba(255, 99, 132, 0.2)',
+                    lineStyle: 'dotted',
+                    width: 2
                 }
             });
-        } else {
-            console.warn('No valid chart data to render.');
         }
+
+        chart = new Chart(ctx, {
+            type: isLineChart ? 'line' : 'bar',
+            data: {
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'day',
+                            displayFormats: {
+                                day: 'MMM d'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: chartData.datasets[0].label
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: ${context.parsed.y.toFixed(2)}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Initialize chart with all data
+    const initialData = chartData.datasets[0].data.map((value, index) => ({
+        x: new Date(chartData.labels[index]),
+        y: value
+    }));
+    createChart(initialData);
+    updateStats(initialData);
+    updatePBs(initialData);
+
+    // Event listeners
+    document.getElementById('toggleChartType').addEventListener('click', function() {
+        isLineChart = !isLineChart;
+        createChart(initialData, document.getElementById('dataType').value === 'both');
     });
+
+    document.getElementById('dataType').addEventListener('change', function() {
+        const showTrend = this.value === 'both' || this.value === 'trend';
+        createChart(initialData, showTrend);
+    });
+
+    document.getElementById('dateRange').addEventListener('change', function() {
+        const days = parseInt(this.value);
+        let filteredData = initialData;
+        
+        if (days !== 'all') {
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - days);
+            filteredData = initialData.filter(point => point.x >= cutoffDate);
+        }
+        
+        createChart(filteredData, document.getElementById('dataType').value === 'both');
+        updateStats(filteredData);
+        updatePBs(filteredData);
+    });
+
+    document.getElementById('downloadData').addEventListener('click', function() {
+        const csvContent = "data:text/csv;charset=utf-8," 
+            + "Date,Value\n"
+            + initialData.map(point => 
+                `${formatDate(point.x)},${point.y}`
+            ).join("\n");
+        
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "{{ exercise.name }}_progress.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+});
 </script>
 {% endblock %}

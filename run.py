@@ -8,4 +8,4 @@ if __name__ == '__main__':
     # debug=True enables debug mode, which provides helpful error messages
     # and reloads the server when you make code changes.
     # DO NOT use debug=True in a production environment.
-    app.run(debug=True)
+    app.run(host='127.0.0.1', port=5000, debug=True)
