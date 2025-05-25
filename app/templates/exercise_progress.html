@@ -1,39 +1,45 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>{{ title }}</h1>
-    <p><a href="{{ url_for('main.index') }}">&laquo; Back to Home</a></p>
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">{{ title }}</h1>
+                <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Home
+                </a>
+            </div>
 
-    {% if chart_data_json and chart_data_json != '{}' %}
-        <div style="width: 80%; margin: auto;">
-            <canvas id="progressChart"></canvas>
+            {% if chart_data_json and chart_data_json != '{}' %}
+                <div class="card">
+                    <div class="card-body">
+                        <div class="chart-container" style="position: relative; height: 60vh;">
+                            <canvas id="progressChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> Not enough data to display a progress chart for this exercise yet.
+                </div>
+            {% endif %}
         </div>
-    {% else %}
-        <p>Not enough data to display a progress chart for this exercise yet.</p>
-    {% endif %}
-
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
-{{ super() }} {# Includes scripts from base.html if any were there before this block #}
+{{ super() }}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Log the raw JSON string from Flask
-        console.log('Raw chart_data_json from Flask:', {{ chart_data_json|safe }});
-
         const chartDataJson = {{ chart_data_json|safe }};
 
-        // Log the parsed JavaScript object
-        console.log('Parsed chartData object:', chartDataJson);
-
         if (chartDataJson && chartDataJson.datasets && chartDataJson.datasets.length > 0 && chartDataJson.datasets[0].data.length > 0) {
-            console.log('Attempting to create chart...');
             const ctx = document.getElementById('progressChart').getContext('2d');
-            if (ctx) {
-                console.log('Canvas context obtained.');
-            } else {
+            if (!ctx) {
                 console.error('Failed to get canvas context. Check canvas ID.');
-                return; // Stop if no context
+                return;
             }
 
             new Chart(ctx, {
@@ -41,10 +47,14 @@
                 data: chartDataJson,
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
+                    maintainAspectRatio: false,
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Value'
+                            }
                         },
                         x: {
                             title: {
@@ -55,18 +65,31 @@
                     },
                     plugins: {
                         legend: {
-                            display: true
+                            display: true,
+                            position: 'top'
                         },
                         tooltip: {
                             mode: 'index',
                             intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 10,
+                            titleFont: {
+                                size: 14
+                            },
+                            bodyFont: {
+                                size: 13
+                            }
                         }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
                     }
                 }
             });
-            console.log('Chart instantiation attempted.');
         } else {
-            console.warn('No valid chart data to render. chartDataJson:', chartDataJson);
+            console.warn('No valid chart data to render.');
         }
     });
 </script>

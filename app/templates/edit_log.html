@@ -1,69 +1,99 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>{{ title }}</h1>
-    {# The action URL should point back to the same edit_log route with the log_id #}
-    <form method="POST" action="{{ url_for('main.edit_log', log_id=log_id) }}" novalidate>
-        {{ form.hidden_tag() }} {# CSRF token #}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="h3 mb-0">{{ title }}</h1>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('main.edit_log', log_id=log_id) }}" novalidate>
+                        {{ form.hidden_tag() }}
 
-        <p>
-            {{ form.exercise.label }}<br>
-            {{ form.exercise() }}<br>
-            {% for error in form.exercise.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.sets.label }}<br>
-            {{ form.sets(size=5) }}
-            {% for error in form.sets.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.reps.label }}<br>
-            {{ form.reps(size=5) }}
-            {% for error in form.reps.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.weight.label }}<br>
-            {{ form.weight(size=10) }}
-            {% for error in form.weight.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.duration_minutes.label }}<br>
-            {{ form.duration_minutes(size=10) }}
-            {% for error in form.duration_minutes.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.distance_km.label }}<br>
-            {{ form.distance_km(size=10) }}
-            {% for error in form.distance_km.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.notes.label }}<br>
-            {{ form.notes(cols=35, rows=4) }}<br>
-            {% for error in form.notes.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        {# If you add a date field to your form later, include it here #}
-        {# <p>
-            {{ form.date.label }}<br>
-            {{ form.date() }}<br>
-            {% for error in form.date.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p> #}
-        <p>{{ form.submit(value='Update Log') }} {# Change button text #} </p>
-    </form>
-    <p><a href="{{ url_for('main.index') }}">Cancel</a></p>
+                        <div class="mb-3">
+                            {{ form.exercise.label(class="form-label") }}
+                            {{ form.exercise(class="form-select") }}
+                            {% for error in form.exercise.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ error }}
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.sets.label(class="form-label") }}
+                                {{ form.sets(class="form-control", size=5) }}
+                                {% for error in form.sets.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                {{ form.reps.label(class="form-label") }}
+                                {{ form.reps(class="form-control", size=5) }}
+                                {% for error in form.reps.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form.weight.label(class="form-label") }}
+                                {{ form.weight(class="form-control", size=10) }}
+                                {% for error in form.weight.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                {{ form.duration_minutes.label(class="form-label") }}
+                                {{ form.duration_minutes(class="form-control", size=10) }}
+                                {% for error in form.duration_minutes.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                {{ form.distance_km.label(class="form-label") }}
+                                {{ form.distance_km(class="form-control", size=10) }}
+                                {% for error in form.distance_km.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.notes.label(class="form-label") }}
+                            {{ form.notes(class="form-control", cols=35, rows=4) }}
+                            {% for error in form.notes.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ error }}
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            {{ form.submit(value='Update Log', class="btn btn-primary") }}
+                            <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

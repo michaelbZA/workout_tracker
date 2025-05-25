@@ -1,111 +1,152 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Welcome to Your Workout Tracker!</h1>
+<div class="container py-4">
+    <h1 class="display-4 mb-4">Welcome to Your Workout Tracker!</h1>
 
     {# --- Personal Bests Section --- #}
-    <h2>Personal Bests</h2>
-    {% if personal_bests %}
-        <ul>
-        {% for ex in exercises %} {# Iterate through exercises to maintain order and access name #}
-            {% if ex.id in personal_bests %}
-                <li>
-                    <strong>{{ ex.name }}</strong>
-                    {% set pb = personal_bests[ex.id] %} {# Get the PB data for this exercise #}
-
-                    {% if pb.max_weight %}
-                        <div>
-                            Max Weight: {{ pb.max_weight.value }}
-                            {% if pb.max_weight.reps is not none %} (for {{ pb.max_weight.reps }} reps
-                                {% if pb.max_weight.sets is not none %}
-                                , {{ pb.max_weight.sets }} sets
+    <div class="mb-5">
+        <h2 class="h3 mb-3">Personal Bests</h2>
+        {% if personal_bests %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for ex in exercises %}
+                {% if ex.id in personal_bests %}
+                    {% set pb = personal_bests[ex.id] %}
+                    <div class="col">
+                        <div class="card h-100">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="card-title mb-0">{{ ex.name }}</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if pb.max_weight %}
+                                    <div class="mb-2">
+                                        <h6 class="text-muted">Max Weight</h6>
+                                        <p class="mb-0">
+                                            {{ pb.max_weight.value }}
+                                            {% if pb.max_weight.reps is not none %} (for {{ pb.max_weight.reps }} reps
+                                                {% if pb.max_weight.sets is not none %}
+                                                , {{ pb.max_weight.sets }} sets
+                                                {% endif %}
+                                            ){% endif %}
+                                            <small class="text-muted d-block">on {{ pb.max_weight.date.strftime('%Y-%m-%d') }}</small>
+                                        </p>
+                                    </div>
                                 {% endif %}
-                            ){% endif %}
-                            <small> on {{ pb.max_weight.date.strftime('%Y-%m-%d') }}</small>
+
+                                {% if pb.max_distance %}
+                                    <div>
+                                        <h6 class="text-muted">Longest Distance</h6>
+                                        <p class="mb-0">
+                                            {{ pb.max_distance.value }} km
+                                            {% if pb.max_distance.duration is not none %}
+                                                (in {{ pb.max_distance.duration }} min)
+                                            {% endif %}
+                                            <small class="text-muted d-block">on {{ pb.max_distance.date.strftime('%Y-%m-%d') }}</small>
+                                        </p>
+                                    </div>
+                                {% endif %}
+                            </div>
                         </div>
-                    {% endif %}
-
-                    {% if pb.max_distance %}
-                         <div>
-                            Longest Distance: {{ pb.max_distance.value }} km
-                            {% if pb.max_distance.duration is not none %}
-                                (in {{ pb.max_distance.duration }} min)
-                            {% endif %}
-                            <small> on {{ pb.max_distance.date.strftime('%Y-%m-%d') }}</small>
-                        </div>
-                    {% endif %}
-                </li>
-            {% endif %}
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>No Personal Bests calculated yet. Keep logging workouts!</p>
-    {% endif %}
-    <hr>
-    {# --- End Personal Bests Section --- #}
-
-
-    <h2>Exercises</h2>
-    {% if exercises %}
-        <ul style="list-style-type: none; padding-left: 0;"> {# Removed bullets for cleaner look #}
-            {% for exercise in exercises %}
-                <li style="margin-bottom: 15px; border: 1px solid #eee; padding: 10px;">
-                    <strong>{{ exercise.name }}</strong>
-                    {% if exercise.category %}({{ exercise.category }}){% endif %}
-                    - <a href="{{ url_for('main.exercise_progress', exercise_id=exercise.id) }}">View Progress</a>
-                    {% if exercise.description %}<p style="margin-top: 5px; margin-bottom: 10px;"><small>{{ exercise.description }}</small></p>{% endif %}
-    
-                    {# Delete Button/Form for Exercise #}
-                    <form method="POST" action="{{ url_for('main.delete_exercise', exercise_id=exercise.id) }}" style="display: inline; margin-right: 5px;" onsubmit="return confirm('Are you sure you want to delete this exercise? This action cannot be undone.');">
-                        <input type="submit" value="Delete Exercise" class="btn btn-danger btn-sm">
-                    </form>
-                    <a href="{{ url_for('main.edit_exercise', exercise_id=exercise.id) }}" class="btn btn-secondary btn-sm" style="display: inline-block; padding: 0.25rem 0.5rem; font-size: .875rem; line-height: 1.5; border-radius: .2rem;">Edit Exercise</a>
-                </li>
-            {% else %}
-                <li>No exercises added yet. <a href="{{ url_for('main.add_exercise') }}">Add one now!</a></li>
+                    </div>
+                {% endif %}
             {% endfor %}
-        </ul>
-    {% else %}
-        <p>No exercises added yet. <a href="{{ url_for('main.add_exercise') }}">Add one now!</a></p>
-    {% endif %}
-
-    <hr>
-    <h2>Workout Logs</h2>
-{% if workout_logs %}
-    <ul style="list-style-type: none; padding-left: 0;"> {# Removed bullets for cleaner look with buttons #}
-        {% for log in workout_logs %}
-            <li style="margin-bottom: 15px; border: 1px solid #eee; padding: 10px;"> {# Added some styling #}
-                <strong>{{ log.exercise.name }}</strong> on {{ log.date.strftime('%Y-%m-%d %H:%M') }}
-                <p style="margin-top: 5px; margin-bottom: 10px;">
-                    {% if log.sets is not none and log.reps is not none %}
-                        Sets: {{ log.sets }}, Reps: {{ log.reps }}
-                    {% endif %}
-                    {% if log.weight is not none %}
-                        , Weight: {{ log.weight }}
-                    {% endif %}
-                    {% if log.duration_minutes is not none %}
-                        , Duration: {{ log.duration_minutes }} min
-                    {% endif %}
-                    {% if log.distance_km is not none %}
-                        , Distance: {{ log.distance_km }} km
-                    {% endif %}
-                    {% if log.notes %}
-                        <br><small>Notes: {{ log.notes }}</small>
-                    {% endif %}
-                </p>
-                {# Delete Button/Form #}
-                <form method="POST" action="{{ url_for('main.delete_log', log_id=log.id) }}" style="display: inline; margin-right: 5px;" onsubmit="return confirm('Are you sure you want to delete this log?');">
-                    <input type="submit" value="Delete" class="btn btn-danger btn-sm">
-                </form>
-                
-                <a href="{{ url_for('main.edit_log', log_id=log.id) }}" class="btn btn-secondary btn-sm" style="display: inline-block; padding: 0.25rem 0.5rem; font-size: .875rem; line-height: 1.5; border-radius: .2rem;">Edit</a>
-            </li>
+            </div>
         {% else %}
-             <li>No workouts logged yet. <a href="{{ url_for('main.log_workout') }}">Log one now!</a></li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>No workouts logged yet. <a href="{{ url_for('main.log_workout') }}">Log one now!</a></p>
-{% endif %}
+            <div class="alert alert-info">
+                No Personal Bests calculated yet. Keep logging workouts!
+            </div>
+        {% endif %}
+    </div>
 
+    {# --- Exercises Section --- #}
+    <div class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h3 mb-0">Exercises</h2>
+            <a href="{{ url_for('main.add_exercise') }}" class="btn btn-primary">Add Exercise</a>
+        </div>
+        
+        {% if exercises %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for exercise in exercises %}
+                    <div class="col">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ exercise.name }}</h5>
+                                {% if exercise.category %}
+                                    <span class="badge bg-secondary mb-2">{{ exercise.category }}</span>
+                                {% endif %}
+                                {% if exercise.description %}
+                                    <p class="card-text text-muted">{{ exercise.description }}</p>
+                                {% endif %}
+                                <div class="d-flex gap-2 mt-3">
+                                    <a href="{{ url_for('main.exercise_progress', exercise_id=exercise.id) }}" class="btn btn-outline-primary btn-sm">View Progress</a>
+                                    <a href="{{ url_for('main.edit_exercise', exercise_id=exercise.id) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                                    <form method="POST" action="{{ url_for('main.delete_exercise', exercise_id=exercise.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this exercise? This action cannot be undone.');">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                No exercises added yet. <a href="{{ url_for('main.add_exercise') }}" class="alert-link">Add one now!</a>
+            </div>
+        {% endif %}
+    </div>
+
+    {# --- Workout Logs Section --- #}
+    <div class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h3 mb-0">Workout Logs</h2>
+            <a href="{{ url_for('main.log_workout') }}" class="btn btn-primary">Log Workout</a>
+        </div>
+
+        {% if workout_logs %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for log in workout_logs %}
+                    <div class="col">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <h5 class="card-title mb-0">{{ log.exercise.name }}</h5>
+                                <small class="text-muted">{{ log.date.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-2">
+                                    {% if log.sets is not none and log.reps is not none %}
+                                        <p class="mb-1"><strong>Sets:</strong> {{ log.sets }}, <strong>Reps:</strong> {{ log.reps }}</p>
+                                    {% endif %}
+                                    {% if log.weight is not none %}
+                                        <p class="mb-1"><strong>Weight:</strong> {{ log.weight }}</p>
+                                    {% endif %}
+                                    {% if log.duration_minutes is not none %}
+                                        <p class="mb-1"><strong>Duration:</strong> {{ log.duration_minutes }} min</p>
+                                    {% endif %}
+                                    {% if log.distance_km is not none %}
+                                        <p class="mb-1"><strong>Distance:</strong> {{ log.distance_km }} km</p>
+                                    {% endif %}
+                                    {% if log.notes %}
+                                        <p class="mb-0 text-muted"><small>Notes: {{ log.notes }}</small></p>
+                                    {% endif %}
+                                </div>
+                                <div class="d-flex gap-2 mt-3">
+                                    <a href="{{ url_for('main.edit_log', log_id=log.id) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                                    <form method="POST" action="{{ url_for('main.delete_log', log_id=log.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this log?');">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                No workouts logged yet. <a href="{{ url_for('main.log_workout') }}" class="alert-link">Log one now!</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}
