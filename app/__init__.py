@@ -4,6 +4,7 @@ import os
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
+import json
 
 # Create database extension objects BEFORE the create_app function
 db = SQLAlchemy()
@@ -36,6 +37,11 @@ def create_app(test_config=None):
     @app.context_processor
     def inject_now():
         return {'now': datetime.utcnow()}
+
+    # Add the fromjson filter
+    def fromjson_filter(value):
+        return json.loads(value)
+    app.jinja_env.filters['fromjson'] = fromjson_filter
 
     from . import routes
     app.register_blueprint(routes.bp)
