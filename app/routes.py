@@ -117,45 +117,83 @@ def exercise_progress(exercise_id):
     exercise = Exercise.query.get_or_404(exercise_id)
     logs = WorkoutLog.query.filter_by(exercise_id=exercise.id).order_by(WorkoutLog.date.asc()).all()
 
-    chart_data = {
-        'labels': [], # Dates
-        'datasets': []
-    }
+    chart_labels = []
+    data_points = []
+    
+    # Styling arrays for Chart.js points
+    point_radii = []
+    point_background_colors = []
+    point_border_colors = [] # Optional: if you want different border colors too
+
+    default_point_radius = 4
+    pb_point_radius = 7
+    default_point_bg_color = 'rgba(75, 192, 192, 0.6)' # Teal, slightly transparent
+    pb_point_bg_color = 'rgba(255, 99, 132, 1)' # Red/Pink, solid
+    default_point_border_color = 'rgba(75, 192, 192, 1)' # Solid Teal
+    pb_point_border_color = 'rgba(255, 99, 132, 1)'     # Solid Red/Pink
 
     dataset_label = ""
-    data_points = []
+    pb_value = None # To store the identified PB value from the logs
 
-    # Determine chart type based on category (simple heuristic)
     is_cardio = exercise.category and 'cardio' in exercise.category.lower()
 
     if is_cardio:
         dataset_label = 'Distance (km)'
+        # Find PB value for distance among the logs
+        valid_logs = [log for log in logs if log.distance_km is not None]
+        if valid_logs:
+            pb_value = max(log.distance_km for log in valid_logs)
+        
         for log in logs:
             if log.distance_km is not None:
-                chart_data['labels'].append(log.date.strftime('%Y-%m-%d'))
+                chart_labels.append(log.date.strftime('%Y-%m-%d'))
                 data_points.append(log.distance_km)
-        # You could add another dataset for duration if desired
-        # e.g., duration_data_points = [log.duration_minutes for log in logs if log.duration_minutes is not None]
+                if log.distance_km == pb_value:
+                    point_radii.append(pb_point_radius)
+                    point_background_colors.append(pb_point_bg_color)
+                    point_border_colors.append(pb_point_border_color)
+                else:
+                    point_radii.append(default_point_radius)
+                    point_background_colors.append(default_point_bg_color)
+                    point_border_colors.append(default_point_border_color)
     else: # Assume strength/weight-based
         dataset_label = 'Weight Lifted'
+        # Find PB value for weight among the logs
+        valid_logs = [log for log in logs if log.weight is not None]
+        if valid_logs:
+            pb_value = max(log.weight for log in valid_logs)
+
         for log in logs:
             if log.weight is not None:
-                # To avoid too many points if multiple sets on same day,
-                # you might want to aggregate (e.g., max weight per day).
-                # For now, plotting each log entry with weight.
-                chart_data['labels'].append(log.date.strftime('%Y-%m-%d %H:%M')) # More granular for multiple entries per day
+                chart_labels.append(log.date.strftime('%Y-%m-%d %H:%M'))
                 data_points.append(log.weight)
+                if log.weight == pb_value: # Note: if multiple logs have the same PB value, all will be highlighted
+                    point_radii.append(pb_point_radius)
+                    point_background_colors.append(pb_point_bg_color)
+                    point_border_colors.append(pb_point_border_color)
+                else:
+                    point_radii.append(default_point_radius)
+                    point_background_colors.append(default_point_bg_color)
+                    point_border_colors.append(default_point_border_color)
+    
+    chart_data = {
+        'labels': chart_labels,
+        'datasets': []
+    }
 
     if data_points: # Only add dataset if there's data
         chart_data['datasets'].append({
             'label': dataset_label,
             'data': data_points,
             'fill': False,
-            'borderColor': 'rgb(75, 192, 192)',
-            'tension': 0.1
+            'borderColor': default_point_border_color, # Line color
+            'tension': 0.1,
+            'pointRadius': point_radii,
+            'pointBackgroundColor': point_background_colors,
+            'pointBorderColor': point_border_colors,
+            'pointHoverRadius': [r + 2 for r in point_radii] # Make hover radius slightly larger
         })
 
-    # Safely pass chart_data to template by converting to JSON string
     chart_data_json = json.dumps(chart_data)
 
     return render_template('exercise_progress.html',
