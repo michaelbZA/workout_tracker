@@ -9,47 +9,42 @@
         <h2 class="h3 mb-3">Personal Bests</h2>
         {% if personal_bests %}
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-            {% for ex in exercises %}
-                {% if ex.id in personal_bests %}
-                    {% set pb = personal_bests[ex.id] %}
-                    <div class="col">
-                        <div class="card h-100">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="card-title mb-0">{{ ex.name }}</h5>
-                            </div>
-                            <div class="card-body">
-                                {% if pb.max_weight %}
-                                    <div class="mb-2">
-                                        <h6 class="text-muted">Max Weight</h6>
-                                        <p class="mb-0">
-                                            {{ pb.max_weight.value }}
+                {% for ex in exercises %}
+                    {% if ex.id in personal_bests %}
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ ex.name }}</h5>
+                                    {% set pb = personal_bests[ex.id] %}
+                                    
+                                    {% if pb.max_weight %}
+                                        <div>
+                                            Max Weight: <strong>{{ pb.max_weight.value }}</strong>
                                             {% if pb.max_weight.reps is not none %} (for {{ pb.max_weight.reps }} reps
-                                                {% if pb.max_weight.sets is not none %}
-                                                , {{ pb.max_weight.sets }} sets
-                                                {% endif %}
+                                                {% if pb.max_weight.sets is not none %}, {{ pb.max_weight.sets }} sets{% endif %}
                                             ){% endif %}
-                                            <small class="text-muted d-block">on {{ pb.max_weight.date.strftime('%Y-%m-%d') }}</small>
-                                        </p>
-                                    </div>
-                                {% endif %}
+                                            <small class="text-muted"> on {{ pb.max_weight.date.strftime('%Y-%m-%d') }}</small>
+                                        </div>
+                                        {# Display Estimated 1RM if available #}
+                                        {% if pb.e1rm %}
+                                            <div class="mt-1">
+                                                Est. 1RM (based on max weight lift): <strong>{{ pb.e1rm }}</strong>
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
 
-                                {% if pb.max_distance %}
-                                    <div>
-                                        <h6 class="text-muted">Longest Distance</h6>
-                                        <p class="mb-0">
-                                            {{ pb.max_distance.value }} km
-                                            {% if pb.max_distance.duration is not none %}
-                                                (in {{ pb.max_distance.duration }} min)
-                                            {% endif %}
-                                            <small class="text-muted d-block">on {{ pb.max_distance.date.strftime('%Y-%m-%d') }}</small>
-                                        </p>
-                                    </div>
-                                {% endif %}
+                                    {% if pb.max_distance %}
+                                        <div {% if pb.max_weight %}class="mt-2"{% endif %}>
+                                            Longest Distance: <strong>{{ pb.max_distance.value }} km</strong>
+                                            {% if pb.max_distance.duration is not none %} (in {{ pb.max_distance.duration }} min){% endif %}
+                                            <small class="text-muted"> on {{ pb.max_distance.date.strftime('%Y-%m-%d') }}</small>
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                {% endif %}
-            {% endfor %}
+                    {% endif %}
+                {% endfor %}
             </div>
         {% else %}
             <div class="alert alert-info">

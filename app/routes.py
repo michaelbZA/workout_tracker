@@ -35,6 +35,17 @@ def index():
                 'reps': max_weight_log.reps, # Also show reps for context
                 'sets': max_weight_log.sets  # And sets
             }
+            
+            # Calculate Estimated 1RM if reps are available and > 0
+            if max_weight_log.reps and max_weight_log.reps > 0:
+                weight = float(max_weight_log.weight)
+                reps = int(max_weight_log.reps)
+                if reps == 1:
+                    e1rm = weight
+                else:
+                    # Using Epley formula: e1RM = weight * (1 + reps / 30)
+                    e1rm = weight * (1 + (reps / 30.0))
+                pb_data['e1rm'] = round(e1rm, 2)  # Store rounded e1RM
 
         # Longest Distance PB (e.g., if category is 'Cardio')
         # We'll make a simple assumption for now: if "Cardio" is in the category name.
