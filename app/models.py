@@ -42,8 +42,8 @@ class Exercise(db.Model):
 
 class WorkoutLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    exercise_id = db.Column(db.Integer, db.ForeignKey('exercise.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    exercise_id = db.Column(db.Integer, db.ForeignKey('exercise.id'), nullable=False)
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     sets = db.Column(db.Integer)
     reps = db.Column(db.Integer)
@@ -51,7 +51,9 @@ class WorkoutLog(db.Model):
     duration_minutes = db.Column(db.Integer)  # for cardio exercises
     distance_km = db.Column(db.Float)  # for cardio exercises
     notes = db.Column(db.Text)
-    is_pb = db.Column(db.Boolean, default=False)  # personal best flag
+    is_pb = db.Column(db.Boolean, default=False)  # Personal Best
+    is_pr = db.Column(db.Boolean, default=False)  # Personal Record
+    pr_description = db.Column(db.Text)  # Description of the PR achievement
 
     def __repr__(self):
         return f'<WorkoutLog {self.exercise.name} {self.date}>'

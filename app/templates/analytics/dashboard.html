@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Workout Analytics</h1>
+    
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">30-Day Stats</h5>
+                    <div id="workoutStats">
+                        <p>Total Workouts: <span id="totalWorkouts">-</span></p>
+                        <p>Strength Volume: <span id="strengthVolume">-</span> kg</p>
+                        <p>Cardio Minutes: <span id="cardioMinutes">-</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Personal Records & Achievements</h5>
+                    <div id="personalRecords" class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Exercise</th>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Details</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody id="prTableBody">
+                                <tr>
+                                    <td colspan="5" class="text-center">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Strength Progress</h5>
+                    <div class="text-center py-4" id="strengthChartLoading">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <canvas id="strengthChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Cardio Progress</h5>
+                    <div class="text-center py-4" id="cardioChartLoading">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <canvas id="cardioChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Fetch and display workout stats
+fetch('/analytics/api/analytics/workout-stats')
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('totalWorkouts').textContent = data.total_workouts;
+        document.getElementById('strengthVolume').textContent = data.strength_volume.toFixed(0);
+        document.getElementById('cardioMinutes').textContent = data.cardio_minutes;
+    });
+
+// Fetch and display personal records
+fetch('/analytics/api/analytics/personal-records')
+    .then(response => response.json())
+    .then(data => {
+        const tbody = document.getElementById('prTableBody');
+        tbody.innerHTML = '';
+        
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center">No records yet</td></tr>';
+            return;
+        }
+        
+        data.forEach(record => {
+            const row = document.createElement('tr');
+            
+            // Determine record type and details
+            let type = '';
+            let details = '';
+            
+            if (record.is_pb) {
+                type = '<span class="badge bg-success">Personal Best</span>';
+                if (record.weight) {
+                    details = `${record.weight} kg × ${record.reps} reps × ${record.sets} sets`;
+                } else if (record.distance) {
+                    details = `${record.distance} km in ${record.duration} min`;
+                }
+            }
+            
+            if (record.is_pr) {
+                if (type) type += ' ';
+                type += '<span class="badge bg-info">Personal Record</span>';
+            }
+            
+            row.innerHTML = `
+                <td>${record.exercise}</td>
+                <td>${record.date}</td>
+                <td>${type}</td>
+                <td>${details}</td>
+                <td>${record.pr_description || '-'}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    });
+
+// Create strength progress chart
+fetch('/analytics/api/analytics/strength-progress')
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('strengthChartLoading').style.display = 'none';
+        const ctx = document.getElementById('strengthChart').getContext('2d');
+        const datasets = [];
+        
+        for (const [exercise, dates] of Object.entries(data)) {
+            const weights = [];
+            const labels = [];
+            
+            for (const [date, logs] of Object.entries(dates)) {
+                const maxWeight = Math.max(...logs.map(log => log.weight));
+                weights.push(maxWeight);
+                labels.push(date);
+            }
+            
+            datasets.push({
+                label: exercise,
+                data: weights,
+                borderColor: `hsl(${Math.random() * 360}, 70%, 50%)`,
+                fill: false
+            });
+        }
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [...new Set(Object.values(data).flatMap(dates => Object.keys(dates)))].sort(),
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Weight Progress (kg)'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+
+// Create cardio progress chart
+fetch('/analytics/api/analytics/cardio-progress')
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('cardioChartLoading').style.display = 'none';
+        const ctx = document.getElementById('cardioChart').getContext('2d');
+        const datasets = [];
+        
+        for (const [exercise, dates] of Object.entries(data)) {
+            // Distance dataset
+            const distances = [];
+            const durations = [];
+            const labels = [];
+            
+            for (const [date, logs] of Object.entries(dates)) {
+                const maxDistance = Math.max(...logs.map(log => log.distance));
+                const maxDuration = Math.max(...logs.map(log => log.duration));
+                distances.push(maxDistance);
+                durations.push(maxDuration);
+                labels.push(date);
+            }
+            
+            datasets.push({
+                label: `${exercise} - Distance`,
+                data: distances,
+                borderColor: `hsl(${Math.random() * 360}, 70%, 50%)`,
+                fill: false,
+                yAxisID: 'y'
+            });
+            
+            datasets.push({
+                label: `${exercise} - Duration`,
+                data: durations,
+                borderColor: `hsl(${Math.random() * 360}, 70%, 50%)`,
+                fill: false,
+                yAxisID: 'y1'
+            });
+        }
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [...new Set(Object.values(data).flatMap(dates => Object.keys(dates)))].sort(),
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Cardio Progress'
+                    }
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Distance (km)'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Duration (minutes)'
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %} 

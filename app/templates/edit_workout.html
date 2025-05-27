@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Edit Workout Log</h1>
+    <div class="row">
+        <div class="col-md-8">
+            <form method="POST" action="">
+                {{ form.hidden_tag() }}
+                <div class="mb-3">
+                    {{ form.exercise.label(class="form-label") }}
+                    {{ form.exercise(class="form-select") }}
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            {{ form.sets.label(class="form-label") }}
+                            {{ form.sets(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            {{ form.reps.label(class="form-label") }}
+                            {{ form.reps(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            {{ form.weight.label(class="form-label") }}
+                            {{ form.weight(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.duration_minutes.label(class="form-label") }}
+                            {{ form.duration_minutes(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.distance_km.label(class="form-label") }}
+                            {{ form.distance_km(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    {{ form.notes.label(class="form-label") }}
+                    {{ form.notes(class="form-control", rows=3) }}
+                </div>
+                <div class="mb-3 form-check">
+                    {{ form.is_pr(class="form-check-input") }}
+                    {{ form.is_pr.label(class="form-check-label") }}
+                </div>
+                <div class="mb-3">
+                    {{ form.pr_description.label(class="form-label") }}
+                    {{ form.pr_description(class="form-control", rows=2) }}
+                </div>
+                <div class="mb-3">
+                    {{ form.submit(class="btn btn-primary") }}
+                    <a href="{{ url_for('workout.history') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Current Workout Details</h5>
+                    <p class="card-text">
+                        <strong>Date:</strong> {{ log_entry.date.strftime('%Y-%m-%d %H:%M') }}<br>
+                        <strong>Exercise:</strong> {{ log_entry.exercise.name }}<br>
+                        {% if log_entry.sets %}
+                        <strong>Sets:</strong> {{ log_entry.sets }}<br>
+                        {% endif %}
+                        {% if log_entry.reps %}
+                        <strong>Reps:</strong> {{ log_entry.reps }}<br>
+                        {% endif %}
+                        {% if log_entry.weight %}
+                        <strong>Weight:</strong> {{ log_entry.weight }} kg/lbs<br>
+                        {% endif %}
+                        {% if log_entry.duration_minutes %}
+                        <strong>Duration:</strong> {{ log_entry.duration_minutes }} minutes<br>
+                        {% endif %}
+                        {% if log_entry.distance_km %}
+                        <strong>Distance:</strong> {{ log_entry.distance_km }} km<br>
+                        {% endif %}
+                        {% if log_entry.is_pb %}
+                        <span class="badge bg-success">Personal Best</span><br>
+                        {% endif %}
+                        {% if log_entry.is_pr %}
+                        <span class="badge bg-info">Personal Record</span><br>
+                        {% if log_entry.pr_description %}
+                        <strong>PR Description:</strong> {{ log_entry.pr_description }}<br>
+                        {% endif %}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

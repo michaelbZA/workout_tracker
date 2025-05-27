@@ -1,6 +1,6 @@
 # app/forms.py
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, SubmitField, SelectField, IntegerField, FloatField, DateField
+from wtforms import StringField, TextAreaField, SubmitField, SelectField, IntegerField, FloatField, DateField, BooleanField
 from wtforms.validators import DataRequired, Length, Optional, NumberRange # Optional allows empty fields if not DataRequired
 
 class ExerciseForm(FlaskForm):
@@ -33,4 +33,6 @@ class WorkoutLogForm(FlaskForm):
     duration_minutes = IntegerField('Duration (minutes)', validators=[Optional(), NumberRange(min=0)])
     distance_km = FloatField('Distance (km)', validators=[Optional(), NumberRange(min=0)])
     notes = TextAreaField('Notes', validators=[Length(max=300)])
+    is_pr = BooleanField('Mark as Personal Record (Other Achievement)')
+    pr_description = TextAreaField('PR Description (Optional)', validators=[Length(max=200)])
     submit = SubmitField('Log Workout')
