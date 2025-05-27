@@ -1,20 +1,20 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container-fluid mt-4">
+<div class="container-fluid mt-3 mt-md-4 px-2 px-md-4">
     <!-- Quick Actions -->
-    <div class="row mb-4">
+    <div class="row mb-3 mb-md-4">
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    <div class="d-flex gap-2">
-                        <a href="{{ url_for('workout.log') }}" class="btn btn-primary">
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ url_for('workout.log') }}" class="btn btn-primary flex-grow-1 flex-md-grow-0">
                             <i class="fas fa-plus-circle"></i> Log Workout
                         </a>
-                        <a href="{{ url_for('workout.workout_plans') }}" class="btn btn-outline-primary">
+                        <a href="{{ url_for('workout.workout_plans') }}" class="btn btn-outline-primary flex-grow-1 flex-md-grow-0">
                             <i class="fas fa-dumbbell"></i> View Plans
                         </a>
-                        <a href="{{ url_for('workout.history') }}" class="btn btn-outline-primary">
+                        <a href="{{ url_for('workout.history') }}" class="btn btn-outline-primary flex-grow-1 flex-md-grow-0">
                             <i class="fas fa-history"></i> Workout History
                         </a>
                     </div>
@@ -24,61 +24,61 @@
     </div>
 
     <!-- Quick Stats Row -->
-    <div class="row mb-4">
-        <div class="col-md-3">
+    <div class="row g-2 g-md-3 mb-3 mb-md-4">
+        <div class="col-6 col-md-3">
             <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
+                <div class="card-body p-2 p-md-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-2">Total Workouts</h6>
-                            <h2 class="mb-0">{{ total_workouts }}</h2>
+                            <h6 class="text-muted mb-1 mb-md-2 small">Total Workouts</h6>
+                            <h2 class="mb-0 h3 h2-md">{{ total_workouts }}</h2>
                         </div>
-                        <div class="bg-primary bg-opacity-10 p-3 rounded">
+                        <div class="bg-primary bg-opacity-10 p-2 p-md-3 rounded">
                             <i class="fas fa-dumbbell text-primary"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
+                <div class="card-body p-2 p-md-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-2">This Month</h6>
-                            <h2 class="mb-0">{{ workouts_this_month }}</h2>
+                            <h6 class="text-muted mb-1 mb-md-2 small">This Month</h6>
+                            <h2 class="mb-0 h3 h2-md">{{ workouts_this_month }}</h2>
                         </div>
-                        <div class="bg-success bg-opacity-10 p-3 rounded">
+                        <div class="bg-success bg-opacity-10 p-2 p-md-3 rounded">
                             <i class="fas fa-calendar-check text-success"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
+                <div class="card-body p-2 p-md-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-2">Total Volume</h6>
-                            <h2 class="mb-0">{{ (total_volume / 1000)|round(1) }}k kg</h2>
+                            <h6 class="text-muted mb-1 mb-md-2 small">Total Volume</h6>
+                            <h2 class="mb-0 h3 h2-md">{{ (total_volume / 1000)|round(1) }}k kg</h2>
                         </div>
-                        <div class="bg-info bg-opacity-10 p-3 rounded">
+                        <div class="bg-info bg-opacity-10 p-2 p-md-3 rounded">
                             <i class="fas fa-weight text-info"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
+                <div class="card-body p-2 p-md-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-2">Active Plan</h6>
-                            <h2 class="mb-0">{{ 'Yes' if active_plan else 'No' }}</h2>
+                            <h6 class="text-muted mb-1 mb-md-2 small">Active Plan</h6>
+                            <h2 class="mb-0 h3 h2-md">{{ 'Yes' if active_plan else 'No' }}</h2>
                         </div>
-                        <div class="bg-warning bg-opacity-10 p-3 rounded">
+                        <div class="bg-warning bg-opacity-10 p-2 p-md-3 rounded">
                             <i class="fas fa-clipboard-list text-warning"></i>
                         </div>
                     </div>
@@ -88,23 +88,23 @@
     </div>
 
     <!-- Charts Row -->
-    <div class="row mb-4">
-        <div class="col-md-8">
+    <div class="row g-2 g-md-3 mb-3 mb-md-4">
+        <div class="col-12 col-md-8">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="card-title mb-0">Workout Trend (Last 7 Days)</h5>
+                <div class="card-header bg-white py-2 py-md-3">
+                    <h5 class="card-title mb-0 h6 h5-md">Workout Trend (Last 7 Days)</h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-2 p-md-3">
                     <canvas id="workoutTrendChart"></canvas>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="card-title mb-0">Exercise Distribution</h5>
+                <div class="card-header bg-white py-2 py-md-3">
+                    <h5 class="card-title mb-0 h6 h5-md">Exercise Distribution</h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-2 p-md-3">
                     <canvas id="exerciseDistributionChart"></canvas>
                 </div>
             </div>
@@ -112,19 +112,19 @@
     </div>
 
     <!-- Recent Activity Row -->
-    <div class="row">
-        <div class="col-md-6">
+    <div class="row g-2 g-md-3">
+        <div class="col-12 col-md-6">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="card-title mb-0">Recent Workouts</h5>
+                <div class="card-header bg-white py-2 py-md-3">
+                    <h5 class="card-title mb-0 h6 h5-md">Recent Workouts</h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-2 p-md-3">
                     <div class="list-group list-group-flush">
                         {% for workout in recent_workouts %}
-                        <div class="list-group-item px-0">
+                        <div class="list-group-item px-0 py-2 py-md-3">
                             <div class="d-flex w-100 justify-content-between align-items-center">
                                 <div>
-                                    <h6 class="mb-1">{{ workout.exercise.name }}</h6>
+                                    <h6 class="mb-1 small h6-md">{{ workout.exercise.name }}</h6>
                                     <p class="mb-1 text-muted small">
                                         {% if workout.exercise.category in ['arms', 'chest', 'back', 'legs', 'shoulders', 'core'] %}
                                             {{ workout.sets }} sets × {{ workout.reps }} reps @ {{ workout.weight }}kg
@@ -151,18 +151,18 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-12 col-md-6">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="card-title mb-0">Personal Records</h5>
+                <div class="card-header bg-white py-2 py-md-3">
+                    <h5 class="card-title mb-0 h6 h5-md">Personal Records</h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-2 p-md-3">
                     <div class="list-group list-group-flush">
                         {% for record in personal_records %}
-                        <div class="list-group-item px-0">
+                        <div class="list-group-item px-0 py-2 py-md-3">
                             <div class="d-flex w-100 justify-content-between align-items-center">
                                 <div>
-                                    <h6 class="mb-1">{{ record.exercise.name }}</h6>
+                                    <h6 class="mb-1 small h6-md">{{ record.exercise.name }}</h6>
                                     <p class="mb-1 text-muted small">
                                         {% if record.exercise.category in ['arms', 'chest', 'back', 'legs', 'shoulders', 'core'] %}
                                             {{ record.weight }}kg
@@ -183,6 +183,15 @@
         </div>
     </div>
 </div>
+
+<style>
+/* Custom responsive classes */
+@media (min-width: 768px) {
+    .h2-md { font-size: 2rem; }
+    .h5-md { font-size: 1.25rem; }
+    .h6-md { font-size: 1rem; }
+}
+</style>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -214,6 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
         data: trendData,
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     display: false
@@ -261,9 +271,14 @@ document.addEventListener('DOMContentLoaded', function() {
         data: distributionData,
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    position: 'bottom'
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                        padding: 10
+                    }
                 }
             },
             cutout: '70%'

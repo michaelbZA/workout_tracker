@@ -5,7 +5,7 @@
     <div class="row mb-4">
         <div class="col-12">
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
+                <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
                     <li class="breadcrumb-item active">Workout History</li>
                 </ol>
@@ -19,27 +19,55 @@
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h1 class="h3 mb-0">Workout History</h1>
                     <a href="{{ url_for('workout.log') }}" class="btn btn-light btn-sm">
-                        <i class="bi bi-plus-lg"></i> Log Workout
+                        <i class="bi bi-plus-lg"></i> <span class="d-none d-sm-inline">Log Workout</span>
                     </a>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
                                 <tr>
                                     <th>Date</th>
                                     <th>Exercise</th>
-                                    <th>Details</th>
-                                    <th>Notes</th>
-                                    <th>Actions</th>
+                                    <th class="d-none d-md-table-cell">Details</th>
+                                    <th class="d-none d-lg-table-cell">Notes</th>
+                                    <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for log in logs %}
                                 <tr>
-                                    <td>{{ log.date.strftime('%Y-%m-%d %H:%M') }}</td>
-                                    <td>{{ log.exercise.name }}</td>
                                     <td>
+                                        <div class="d-flex flex-column">
+                                            <span>{{ log.date.strftime('%Y-%m-%d') }}</span>
+                                            <small class="text-muted d-md-none">{{ log.date.strftime('%H:%M') }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span>{{ log.exercise.name }}</span>
+                                            <div class="d-md-none">
+                                                {% if log.exercise.category and 'cardio' in log.exercise.category.lower() %}
+                                                    {% if log.duration_minutes %}
+                                                        <small class="text-muted">{{ log.duration_minutes }} min</small>
+                                                    {% endif %}
+                                                    {% if log.distance_km %}
+                                                        {% if log.duration_minutes %} - {% endif %}
+                                                        <small class="text-muted">{{ log.distance_km }} km</small>
+                                                    {% endif %}
+                                                {% else %}
+                                                    {% if log.sets and log.reps %}
+                                                        <small class="text-muted">{{ log.sets }}x{{ log.reps }}</small>
+                                                    {% endif %}
+                                                    {% if log.weight %}
+                                                        {% if log.sets and log.reps %} @ {% endif %}
+                                                        <small class="text-muted">{{ log.weight }} kg</small>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="d-none d-md-table-cell">
                                         {% if log.exercise.category and 'cardio' in log.exercise.category.lower() %}
                                             {% if log.duration_minutes %}
                                                 {{ log.duration_minutes }} min
@@ -58,9 +86,9 @@
                                             {% endif %}
                                         {% endif %}
                                     </td>
-                                    <td>{{ log.notes }}</td>
+                                    <td class="d-none d-lg-table-cell">{{ log.notes }}</td>
                                     <td>
-                                        <div class="btn-group btn-group-sm">
+                                        <div class="btn-group btn-group-sm float-end">
                                             <a href="{{ url_for('workout.edit', log_id=log.id) }}" 
                                                class="btn btn-outline-secondary" 
                                                data-bs-toggle="tooltip" 
@@ -78,7 +106,7 @@
 
                                         <!-- Delete Modal -->
                                         <div class="modal fade" id="deleteModal{{ log.id }}" tabindex="-1" aria-hidden="true">
-                                            <div class="modal-dialog">
+                                            <div class="modal-dialog modal-dialog-centered">
                                                 <div class="modal-content">
                                                     <div class="modal-header">
                                                         <h5 class="modal-title">Delete Workout</h5>

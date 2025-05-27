@@ -16,19 +16,32 @@
         .flashes {
             list-style: none;
             padding: 0;
-            margin: 1rem 0;
+            margin: 0;
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: 1rem;
+            right: 1rem;
+            left: 1rem;
             z-index: 1000;
-            max-width: 350px;
+            max-width: 100%;
+        }
+        @media (min-width: 768px) {
+            .flashes {
+                left: auto;
+                max-width: 350px;
+            }
         }
         .flashes li {
-            padding: 1rem;
+            padding: 0.75rem 1rem;
             margin-bottom: 0.5rem;
             border-radius: 4px;
             animation: slideIn 0.5s ease-out;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            font-size: 0.9rem;
+        }
+        @media (min-width: 768px) {
+            .flashes li {
+                font-size: 1rem;
+            }
         }
         .flashes .success {
             background-color: #d4edda;
@@ -66,12 +79,30 @@
         /* Navbar improvements */
         .navbar {
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 0.5rem 1rem;
+        }
+        @media (min-width: 768px) {
+            .navbar {
+                padding: 0.75rem 1rem;
+            }
         }
         .navbar-brand {
             font-weight: 600;
+            font-size: 1.1rem;
+        }
+        @media (min-width: 768px) {
+            .navbar-brand {
+                font-size: 1.25rem;
+            }
         }
         .nav-link {
             position: relative;
+            padding: 0.5rem 0.75rem;
+        }
+        @media (min-width: 768px) {
+            .nav-link {
+                padding: 0.5rem 1rem;
+            }
         }
         .nav-link.active::after {
             content: '';
@@ -84,9 +115,52 @@
         }
         .dropdown-menu {
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: none;
+            padding: 0.5rem 0;
+        }
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        @media (min-width: 768px) {
+            .dropdown-item {
+                font-size: 1rem;
+            }
         }
         .dropdown-item:hover {
             background-color: #f8f9fa;
+        }
+        .navbar-toggler {
+            padding: 0.25rem 0.5rem;
+            font-size: 1rem;
+            border: none;
+        }
+        .navbar-toggler:focus {
+            box-shadow: none;
+        }
+
+        /* Main content */
+        main.container {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+        @media (min-width: 768px) {
+            main.container {
+                padding-top: 2rem;
+                padding-bottom: 2rem;
+            }
+        }
+
+        /* Footer */
+        .footer {
+            font-size: 0.9rem;
+            padding: 1rem 0;
+        }
+        @media (min-width: 768px) {
+            .footer {
+                font-size: 1rem;
+                padding: 1.5rem 0;
+            }
         }
     </style>
 </head>
@@ -101,12 +175,14 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('main.index') }}">Home</a>
+                            <a class="nav-link" href="{{ url_for('main.index') }}">
+                                <i class="bi bi-house-door"></i> Home
+                            </a>
                         </li>
                         {% if current_user.is_authenticated %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="exercisesDropdown" role="button" data-bs-toggle="dropdown">
-                                Exercises
+                                <i class="bi bi-dumbbell"></i> Exercises
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="{{ url_for('exercise.list') }}">All Exercises</a></li>
@@ -115,7 +191,7 @@
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="workoutsDropdown" role="button" data-bs-toggle="dropdown">
-                                Workouts
+                                <i class="bi bi-calendar-check"></i> Workouts
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="{{ url_for('workout.log') }}">Log Workout</a></li>
@@ -138,18 +214,24 @@
                     </ul>
                     <ul class="navbar-nav">
                         {% if current_user.is_authenticated %}
-                        <li class="nav-item">
-                            <span class="nav-link">Welcome, {{ current_user.username }}</span>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle"></i> {{ current_user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+                            </ul>
                         </li>
                         {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
+                            <a class="nav-link" href="{{ url_for('auth.login') }}">
+                                <i class="bi bi-box-arrow-in-right"></i> Login
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.register') }}">Register</a>
+                            <a class="nav-link" href="{{ url_for('auth.register') }}">
+                                <i class="bi bi-person-plus"></i> Register
+                            </a>
                         </li>
                         {% endif %}
                     </ul>

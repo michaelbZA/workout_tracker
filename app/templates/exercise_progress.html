@@ -5,7 +5,7 @@
     <div class="row">
         <div class="col-12">
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
+                <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
                     <li class="breadcrumb-item active">{{ exercise.name }} Progress</li>
                 </ol>
@@ -15,17 +15,23 @@
 
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
                     <h1 class="h3 mb-0">{{ exercise.name }} Progress</h1>
-                    <div>
-                        <button class="btn btn-light btn-sm" id="toggleChartType">Toggle Chart Type</button>
-                        <button class="btn btn-light btn-sm ms-2" id="downloadData">Download Data</button>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-light btn-sm" id="toggleChartType">
+                            <i class="bi bi-bar-chart-line"></i>
+                            <span class="d-none d-sm-inline">Toggle Chart</span>
+                        </button>
+                        <button class="btn btn-light btn-sm" id="downloadData">
+                            <i class="bi bi-download"></i>
+                            <span class="d-none d-sm-inline">Download</span>
+                        </button>
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-md-6">
                             <div class="form-group">
                                 <label for="dateRange" class="form-label">Date Range</label>
                                 <select class="form-select" id="dateRange">
@@ -38,7 +44,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <div class="form-group">
                                 <label for="dataType" class="form-label">Data Type</label>
                                 <select class="form-select" id="dataType">
@@ -49,21 +55,21 @@
                             </div>
                         </div>
                     </div>
-                    <div style="height: 400px;">
+                    <div style="height: 300px;" class="mb-4">
                         <canvas id="progressChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
-            </div>
+    </div>
 
-    <div class="row">
-        <div class="col-md-6">
-                <div class="card">
-                <div class="card-header">
+    <div class="row g-4">
+        <div class="col-12 col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
                     <h2 class="h5 mb-0">Statistics</h2>
                 </div>
-                    <div class="card-body">
+                <div class="card-body">
                     <div id="statsContent">
                         <div class="text-center">
                             <div class="spinner-border text-primary" role="status">
@@ -74,9 +80,9 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
+        <div class="col-12 col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
                     <h2 class="h5 mb-0">Personal Bests</h2>
                 </div>
                 <div class="card-body">
@@ -128,22 +134,30 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateStats(data) {
         const stats = calculateStats(data);
         const statsHtml = `
-            <div class="row text-center">
-                <div class="col-6 mb-3">
-                    <h3 class="h6 text-muted">Minimum</h3>
-                    <p class="h4">${stats.min.toFixed(2)}</p>
-                </div>
-                <div class="col-6 mb-3">
-                    <h3 class="h6 text-muted">Maximum</h3>
-                    <p class="h4">${stats.max.toFixed(2)}</p>
+            <div class="row text-center g-3">
+                <div class="col-6">
+                    <div class="p-3 bg-light rounded">
+                        <h3 class="h6 text-muted mb-2">Minimum</h3>
+                        <p class="h4 mb-0">${stats.min.toFixed(2)}</p>
+                    </div>
                 </div>
                 <div class="col-6">
-                    <h3 class="h6 text-muted">Average</h3>
-                    <p class="h4">${stats.avg.toFixed(2)}</p>
+                    <div class="p-3 bg-light rounded">
+                        <h3 class="h6 text-muted mb-2">Maximum</h3>
+                        <p class="h4 mb-0">${stats.max.toFixed(2)}</p>
+                    </div>
                 </div>
                 <div class="col-6">
-                    <h3 class="h6 text-muted">Total Entries</h3>
-                    <p class="h4">${stats.total}</p>
+                    <div class="p-3 bg-light rounded">
+                        <h3 class="h6 text-muted mb-2">Average</h3>
+                        <p class="h4 mb-0">${stats.avg.toFixed(2)}</p>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 bg-light rounded">
+                        <h3 class="h6 text-muted mb-2">Total Entries</h3>
+                        <p class="h4 mb-0">${stats.total}</p>
+                    </div>
                 </div>
             </div>
         `;
@@ -156,10 +170,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const pbDate = data.find(point => point.y === maxValue).x;
         
         const pbHtml = `
-            <div class="text-center">
-                <h3 class="h6 text-muted">Best Performance</h3>
-                <p class="h4">${maxValue.toFixed(2)}</p>
-                <p class="text-muted">Achieved on ${formatDate(pbDate)}</p>
+            <div class="text-center p-3 bg-light rounded">
+                <h3 class="h6 text-muted mb-2">Best Performance</h3>
+                <p class="h4 mb-2">${maxValue.toFixed(2)}</p>
+                <p class="text-muted mb-0">Achieved on ${formatDate(pbDate)}</p>
             </div>
         `;
         document.getElementById('pbContent').innerHTML = pbHtml;
@@ -202,10 +216,14 @@ document.addEventListener('DOMContentLoaded', function() {
             data: {
                 datasets: datasets
             },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                scales: {
                     x: {
                         type: 'time',
                         time: {
@@ -214,9 +232,13 @@ document.addEventListener('DOMContentLoaded', function() {
                                 day: 'MMM d'
                             }
                         },
-                            title: {
-                                display: true,
-                                text: 'Date'
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
                         }
                     },
                     y: {
@@ -226,13 +248,21 @@ document.addEventListener('DOMContentLoaded', function() {
                             text: chartData.datasets[0].label
                         }
                     }
-                        },
+                },
                 plugins: {
-                        tooltip: {
+                    tooltip: {
                         callbacks: {
                             label: function(context) {
                                 return `${context.dataset.label}: ${context.parsed.y.toFixed(2)}`;
                             }
+                        }
+                    },
+                    legend: {
+                        position: 'top',
+                        align: 'center',
+                        labels: {
+                            boxWidth: 12,
+                            padding: 15
                         }
                     }
                 }
@@ -250,46 +280,75 @@ document.addEventListener('DOMContentLoaded', function() {
     updatePBs(initialData);
 
     // Event listeners
-    document.getElementById('toggleChartType').addEventListener('click', function() {
-        isLineChart = !isLineChart;
-        createChart(initialData, document.getElementById('dataType').value === 'both');
-    });
-
-    document.getElementById('dataType').addEventListener('change', function() {
-        const showTrend = this.value === 'both' || this.value === 'trend';
-        createChart(initialData, showTrend);
-    });
-
     document.getElementById('dateRange').addEventListener('change', function() {
         const days = parseInt(this.value);
-        let filteredData = initialData;
+        let filteredData;
         
-        if (days !== 'all') {
+        if (days === -1) { // All time
+            filteredData = initialData;
+        } else {
             const cutoffDate = new Date();
             cutoffDate.setDate(cutoffDate.getDate() - days);
-            filteredData = initialData.filter(point => point.x >= cutoffDate);
+            filteredData = initialData.filter(point => new Date(point.x) >= cutoffDate);
         }
         
-        createChart(filteredData, document.getElementById('dataType').value === 'both');
+        createChart(filteredData, document.getElementById('dataType').value !== 'raw');
         updateStats(filteredData);
         updatePBs(filteredData);
     });
 
-    document.getElementById('downloadData').addEventListener('click', function() {
-        const csvContent = "data:text/csv;charset=utf-8," 
-            + "Date,Value\n"
-            + initialData.map(point => 
-                `${formatDate(point.x)},${point.y}`
-            ).join("\n");
+    document.getElementById('dataType').addEventListener('change', function() {
+        const days = parseInt(document.getElementById('dateRange').value);
+        let filteredData;
         
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "{{ exercise.name }}_progress.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        if (days === -1) {
+            filteredData = initialData;
+        } else {
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - days);
+            filteredData = initialData.filter(point => new Date(point.x) >= cutoffDate);
+        }
+        
+        createChart(filteredData, this.value !== 'raw');
     });
+
+    document.getElementById('toggleChartType').addEventListener('click', function() {
+        isLineChart = !isLineChart;
+        const days = parseInt(document.getElementById('dateRange').value);
+        let filteredData;
+        
+        if (days === -1) {
+            filteredData = initialData;
+        } else {
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - days);
+            filteredData = initialData.filter(point => new Date(point.x) >= cutoffDate);
+        }
+        
+        createChart(filteredData, document.getElementById('dataType').value !== 'raw');
     });
+
+    document.getElementById('downloadData').addEventListener('click', function() {
+        const data = chartData.datasets[0].data.map((value, index) => ({
+            date: chartData.labels[index],
+            value: value
+        }));
+        
+        const csv = [
+            ['Date', chartData.datasets[0].label],
+            ...data.map(row => [row.date, row.value])
+        ].map(row => row.join(',')).join('\n');
+        
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.setAttribute('hidden', '');
+        a.setAttribute('href', url);
+        a.setAttribute('download', `${chartData.datasets[0].label.toLowerCase().replace(/\s+/g, '_')}_data.csv`);
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    });
+});
 </script>
 {% endblock %}

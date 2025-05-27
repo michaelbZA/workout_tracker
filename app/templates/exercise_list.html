@@ -5,7 +5,7 @@
     <div class="row mb-4">
         <div class="col-12">
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
+                <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
                     <li class="breadcrumb-item active">Exercises</li>
                 </ol>
@@ -19,12 +19,12 @@
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h1 class="h3 mb-0">Exercises</h1>
                     <a href="{{ url_for('exercise.add') }}" class="btn btn-light btn-sm">
-                        <i class="bi bi-plus-lg"></i> Add Exercise
+                        <i class="bi bi-plus-lg"></i> <span class="d-none d-sm-inline">Add Exercise</span>
                     </a>
                 </div>
                 <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-md-6">
                             <div class="input-group">
                                 <span class="input-group-text">
                                     <i class="bi bi-search"></i>
@@ -32,7 +32,7 @@
                                 <input type="text" class="form-control" id="searchInput" placeholder="Search exercises...">
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <div class="input-group">
                                 <span class="input-group-text">Filter</span>
                                 <select class="form-select" id="typeFilter">
@@ -45,33 +45,43 @@
                     </div>
 
                     <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
                                 <tr>
                                     <th scope="col" class="sortable" data-sort="name">
                                         Name <i class="bi bi-arrow-down-up"></i>
                                     </th>
-                                    <th scope="col" class="sortable" data-sort="type">
+                                    <th scope="col" class="sortable d-none d-md-table-cell" data-sort="type">
                                         Type <i class="bi bi-arrow-down-up"></i>
                                     </th>
-                                    <th scope="col" class="sortable" data-sort="last_used">
+                                    <th scope="col" class="sortable d-none d-md-table-cell" data-sort="last_used">
                                         Last Used <i class="bi bi-arrow-down-up"></i>
                                     </th>
-                                    <th scope="col">Actions</th>
+                                    <th scope="col" class="text-end">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="exerciseTableBody">
                                 {% for exercise in exercises %}
                                 <tr class="exercise-row" data-type="{{ exercise.type }}">
-                                    <td>{{ exercise.name }}</td>
                                     <td>
+                                        <div class="d-flex flex-column">
+                                            <span>{{ exercise.name }}</span>
+                                            <div class="d-md-none">
+                                                <span class="badge {% if exercise.type == 'strength' %}bg-primary{% else %}bg-success{% endif %} me-2">
+                                                    {{ exercise.type|title }}
+                                                </span>
+                                                <small class="text-muted">Last: {{ exercise.last_used.strftime('%Y-%m-%d') if exercise.last_used else 'Never' }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="d-none d-md-table-cell">
                                         <span class="badge {% if exercise.type == 'strength' %}bg-primary{% else %}bg-success{% endif %}">
                                             {{ exercise.type|title }}
                                         </span>
                                     </td>
-                                    <td>{{ exercise.last_used.strftime('%Y-%m-%d') if exercise.last_used else 'Never' }}</td>
+                                    <td class="d-none d-md-table-cell">{{ exercise.last_used.strftime('%Y-%m-%d') if exercise.last_used else 'Never' }}</td>
                                     <td>
-                                        <div class="btn-group btn-group-sm">
+                                        <div class="btn-group btn-group-sm float-end">
                                             <a href="{{ url_for('exercise.progress', id=exercise.id) }}" 
                                                class="btn btn-outline-primary" 
                                                data-bs-toggle="tooltip" 
@@ -95,7 +105,7 @@
 
                                         <!-- Delete Modal -->
                                         <div class="modal fade" id="deleteModal{{ exercise.id }}" tabindex="-1" aria-hidden="true">
-                                            <div class="modal-dialog">
+                                            <div class="modal-dialog modal-dialog-centered">
                                                 <div class="modal-content">
                                                     <div class="modal-header">
                                                         <h5 class="modal-title">Delete Exercise</h5>
