@@ -30,9 +30,51 @@
                             {% endfor %}
                         </div>
 
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                {{ form.category.label(class="form-label fw-bold") }}
+                                {{ form.category(class="form-select form-select-lg") }}
+                                {% for error in form.category.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.subcategory.label(class="form-label fw-bold") }}
+                                {{ form.subcategory(class="form-select form-select-lg") }}
+                                {% for error in form.subcategory.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                {{ form.difficulty_level.label(class="form-label fw-bold") }}
+                                {{ form.difficulty_level(class="form-select form-select-lg") }}
+                                {% for error in form.difficulty_level.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.equipment_needed.label(class="form-label fw-bold") }}
+                                {{ form.equipment_needed(class="form-control form-control-lg") }}
+                                {% for error in form.equipment_needed.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
                         <div class="mb-4">
                             {{ form.description.label(class="form-label fw-bold") }}
-                            {{ form.description(class="form-control", cols=35, rows=4, placeholder="Enter exercise description") }}
+                            {{ form.description(class="form-control", rows=3) }}
                             {% for error in form.description.errors %}
                             <div class="invalid-feedback d-block">
                                 {{ error }}
@@ -41,13 +83,47 @@
                         </div>
 
                         <div class="mb-4">
-                            {{ form.category.label(class="form-label fw-bold") }}
-                            {{ form.category(class="form-select form-select-lg") }}
-                            {% for error in form.category.errors %}
+                            {{ form.form_instructions.label(class="form-label fw-bold") }}
+                            {{ form.form_instructions(class="form-control", rows=5) }}
+                            {% for error in form.form_instructions.errors %}
                             <div class="invalid-feedback d-block">
                                 {{ error }}
                             </div>
                             {% endfor %}
+                        </div>
+
+                        <div class="mb-4">
+                            {{ form.gif_url.label(class="form-label fw-bold") }}
+                            {{ form.gif_url(class="form-control form-control-lg", placeholder="Enter URL to exercise GIF") }}
+                            {% for error in form.gif_url.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ error }}
+                            </div>
+                            {% endfor %}
+                            <div id="gifPreview" class="mt-2 d-none">
+                                <div class="card">
+                                    <div class="card-body p-2">
+                                        <img src="" alt="Exercise Preview" class="img-fluid rounded" id="previewImage">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            {{ form.common_notes.label(class="form-label fw-bold") }}
+                            {{ form.common_notes(class="form-control", rows=4, placeholder="Common mistakes to avoid and helpful tips") }}
+                            {% for error in form.common_notes.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ error }}
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check">
+                                {{ form.is_favorite(class="form-check-input") }}
+                                {{ form.is_favorite.label(class="form-check-label") }}
+                            </div>
                         </div>
 
                         <div class="d-grid gap-2">
@@ -60,4 +136,57 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const gifUrlInput = document.getElementById('gif_url');
+    const gifPreview = document.getElementById('gifPreview');
+    const previewImage = document.getElementById('previewImage');
+
+    gifUrlInput.addEventListener('input', function() {
+        const url = this.value.trim();
+        if (url) {
+            previewImage.src = url;
+            gifPreview.classList.remove('d-none');
+        } else {
+            gifPreview.classList.add('d-none');
+        }
+    });
+
+    // Auto-populate common notes based on category and subcategory
+    const categorySelect = document.getElementById('category');
+    const subcategorySelect = document.getElementById('subcategory');
+    const commonNotesTextarea = document.getElementById('common_notes');
+
+    function updateCommonNotes() {
+        const category = categorySelect.value;
+        const subcategory = subcategorySelect.value;
+        
+        // Common notes for different exercise types
+        const notes = {
+            'strength': {
+                'chest': 'Common mistakes:\n- Arching back too much\n- Not maintaining proper form\n- Using momentum instead of controlled movement\n\nTips:\n- Keep core engaged\n- Maintain neutral spine\n- Focus on mind-muscle connection',
+                'back': 'Common mistakes:\n- Rounded shoulders\n- Not engaging lats\n- Using momentum\n\nTips:\n- Pull with elbows\n- Squeeze shoulder blades\n- Maintain neutral spine',
+                'legs': 'Common mistakes:\n- Knees caving inward\n- Not hitting proper depth\n- Poor ankle mobility\n\nTips:\n- Keep knees aligned with toes\n- Maintain proper form\n- Focus on full range of motion'
+            },
+            'cardio': {
+                'running': 'Common mistakes:\n- Poor posture\n- Overstriding\n- Heel striking\n\nTips:\n- Land midfoot\n- Keep shoulders relaxed\n- Maintain proper breathing rhythm',
+                'cycling': 'Common mistakes:\n- Incorrect seat height\n- Poor posture\n- Inefficient pedaling\n\nTips:\n- Adjust seat properly\n- Keep back straight\n- Maintain smooth pedal stroke'
+            }
+        };
+
+        if (notes[category] && notes[category][subcategory]) {
+            commonNotesTextarea.value = notes[category][subcategory];
+        } else {
+            commonNotesTextarea.value = '';
+        }
+    }
+
+    categorySelect.addEventListener('change', updateCommonNotes);
+    subcategorySelect.addEventListener('change', updateCommonNotes);
+});
+</script>
 {% endblock %}

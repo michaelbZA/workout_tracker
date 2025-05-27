@@ -19,67 +19,99 @@
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h1 class="h3 mb-0">Exercises</h1>
                     <a href="{{ url_for('exercise.add') }}" class="btn btn-light btn-sm">
-                        <i class="bi bi-plus-lg"></i> <span class="d-none d-sm-inline">Add Exercise</span>
+                        <i class="bi bi-plus-lg"></i> Add Exercise
                     </a>
                 </div>
                 <div class="card-body">
-                    <div class="row g-3 mb-3">
-                        <div class="col-12 col-md-6">
+                    <!-- Search and Filter Controls -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-4">
                             <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="bi bi-search"></i>
-                                </span>
-                                <input type="text" class="form-control" id="searchInput" placeholder="Search exercises...">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" id="searchInput" class="form-control" placeholder="Search exercises...">
                             </div>
                         </div>
-                        <div class="col-12 col-md-6">
-                            <div class="input-group">
-                                <span class="input-group-text">Filter</span>
-                                <select class="form-select" id="typeFilter">
-                                    <option value="all">All Types</option>
-                                    <option value="strength">Strength Training</option>
-                                    <option value="cardio">Cardio</option>
-                                </select>
+                        <div class="col-12 col-md-3">
+                            <select id="categoryFilter" class="form-select">
+                                <option value="">All Categories</option>
+                                <option value="strength">Strength Training</option>
+                                <option value="cardio">Cardio</option>
+                                <option value="flexibility">Flexibility</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <select id="subcategoryFilter" class="form-select">
+                                <option value="">All Subcategories</option>
+                                <option value="chest">Chest</option>
+                                <option value="back">Back</option>
+                                <option value="shoulders">Shoulders</option>
+                                <option value="arms">Arms</option>
+                                <option value="legs">Legs</option>
+                                <option value="core">Core</option>
+                                <option value="full_body">Full Body</option>
+                                <option value="running">Running</option>
+                                <option value="cycling">Cycling</option>
+                                <option value="swimming">Swimming</option>
+                                <option value="yoga">Yoga</option>
+                                <option value="stretching">Stretching</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-2">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="favoritesOnly">
+                                <label class="form-check-label" for="favoritesOnly">Favorites Only</label>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Exercise List -->
                     <div class="table-responsive">
                         <table class="table table-hover align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th scope="col" class="sortable" data-sort="name">
-                                        Name <i class="bi bi-arrow-down-up"></i>
-                                    </th>
-                                    <th scope="col" class="sortable d-none d-md-table-cell" data-sort="type">
-                                        Type <i class="bi bi-arrow-down-up"></i>
-                                    </th>
-                                    <th scope="col" class="sortable d-none d-md-table-cell" data-sort="last_used">
-                                        Last Used <i class="bi bi-arrow-down-up"></i>
-                                    </th>
-                                    <th scope="col" class="text-end">Actions</th>
+                                    <th>Name</th>
+                                    <th class="d-none d-md-table-cell">Category</th>
+                                    <th class="d-none d-lg-table-cell">Equipment</th>
+                                    <th class="d-none d-lg-table-cell">Difficulty</th>
+                                    <th class="d-none d-md-table-cell">Last Used</th>
+                                    <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="exerciseTableBody">
+                            <tbody>
                                 {% for exercise in exercises %}
-                                <tr class="exercise-row" data-type="{{ exercise.type }}">
+                                <tr class="exercise-row" 
+                                    data-category="{{ exercise.category }}"
+                                    data-subcategory="{{ exercise.subcategory }}"
+                                    data-favorite="{{ exercise.is_favorite|lower }}">
                                     <td>
-                                        <div class="d-flex flex-column">
-                                            <span>{{ exercise.name }}</span>
-                                            <div class="d-md-none">
-                                                <span class="badge {% if exercise.type == 'strength' %}bg-primary{% else %}bg-success{% endif %} me-2">
-                                                    {{ exercise.type|title }}
-                                                </span>
-                                                <small class="text-muted">Last: {{ exercise.last_used.strftime('%Y-%m-%d') if exercise.last_used else 'Never' }}</small>
+                                        <div class="d-flex align-items-center">
+                                            {% if exercise.is_favorite %}
+                                            <i class="bi bi-star-fill text-warning me-2"></i>
+                                            {% endif %}
+                                            <div>
+                                                <div class="fw-bold">{{ exercise.name }}</div>
+                                                <div class="d-md-none">
+                                                    <small class="text-muted">
+                                                        {{ exercise.category|title }} - {{ exercise.subcategory|title }}
+                                                    </small>
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="d-none d-md-table-cell">
-                                        <span class="badge {% if exercise.type == 'strength' %}bg-primary{% else %}bg-success{% endif %}">
-                                            {{ exercise.type|title }}
-                                        </span>
+                                        {{ exercise.category|title }} - {{ exercise.subcategory|title }}
                                     </td>
-                                    <td class="d-none d-md-table-cell">{{ exercise.last_used.strftime('%Y-%m-%d') if exercise.last_used else 'Never' }}</td>
+                                    <td class="d-none d-lg-table-cell">{{ exercise.equipment_needed }}</td>
+                                    <td class="d-none d-lg-table-cell">{{ exercise.difficulty_level|title }}</td>
+                                    <td class="d-none d-md-table-cell">
+                                        {% if exercise.last_used %}
+                                            {{ exercise.last_used.strftime('%Y-%m-%d') }}
+                                        {% else %}
+                                            Never
+                                        {% endif %}
+                                    </td>
                                     <td>
                                         <div class="btn-group btn-group-sm float-end">
                                             <a href="{{ url_for('exercise.progress', id=exercise.id) }}" 
@@ -141,91 +173,36 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
-    const typeFilter = document.getElementById('typeFilter');
-    const tableBody = document.getElementById('exerciseTableBody');
-    const rows = tableBody.getElementsByClassName('exercise-row');
-    let currentSort = { column: 'name', direction: 'asc' };
+    const categoryFilter = document.getElementById('categoryFilter');
+    const subcategoryFilter = document.getElementById('subcategoryFilter');
+    const favoritesOnly = document.getElementById('favoritesOnly');
+    const exerciseRows = document.querySelectorAll('.exercise-row');
 
-    // Search functionality
     function filterExercises() {
         const searchTerm = searchInput.value.toLowerCase();
-        const typeValue = typeFilter.value;
+        const categoryValue = categoryFilter.value;
+        const subcategoryValue = subcategoryFilter.value;
+        const showFavoritesOnly = favoritesOnly.checked;
 
-        Array.from(rows).forEach(row => {
-            const name = row.cells[0].textContent.toLowerCase();
-            const type = row.dataset.type;
+        exerciseRows.forEach(row => {
+            const name = row.querySelector('.fw-bold').textContent.toLowerCase();
+            const category = row.dataset.category;
+            const subcategory = row.dataset.subcategory;
+            const isFavorite = row.dataset.favorite === 'true';
+
             const matchesSearch = name.includes(searchTerm);
-            const matchesType = typeValue === 'all' || type === typeValue;
-            row.style.display = matchesSearch && matchesType ? '' : 'none';
+            const matchesCategory = !categoryValue || category === categoryValue;
+            const matchesSubcategory = !subcategoryValue || subcategory === subcategoryValue;
+            const matchesFavorite = !showFavoritesOnly || isFavorite;
+
+            row.style.display = matchesSearch && matchesCategory && matchesSubcategory && matchesFavorite ? '' : 'none';
         });
     }
 
-    // Sorting functionality
-    function sortTable(column) {
-        const rows = Array.from(tableBody.getElementsByClassName('exercise-row'));
-        
-        if (currentSort.column === column) {
-            currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
-        } else {
-            currentSort.column = column;
-            currentSort.direction = 'asc';
-        }
-
-        rows.sort((a, b) => {
-            let aValue = a.cells[getColumnIndex(column)].textContent;
-            let bValue = b.cells[getColumnIndex(column)].textContent;
-
-            if (column === 'last_used') {
-                aValue = aValue === 'Never' ? '0000-00-00' : aValue;
-                bValue = bValue === 'Never' ? '0000-00-00' : bValue;
-            }
-
-            if (currentSort.direction === 'asc') {
-                return aValue.localeCompare(bValue);
-            } else {
-                return bValue.localeCompare(aValue);
-            }
-        });
-
-        rows.forEach(row => tableBody.appendChild(row));
-        updateSortIcons();
-    }
-
-    function getColumnIndex(column) {
-        switch(column) {
-            case 'name': return 0;
-            case 'type': return 1;
-            case 'last_used': return 2;
-            default: return 0;
-        }
-    }
-
-    function updateSortIcons() {
-        document.querySelectorAll('.sortable').forEach(header => {
-            const icon = header.querySelector('i');
-            if (header.dataset.sort === currentSort.column) {
-                icon.className = currentSort.direction === 'asc' ? 'bi bi-arrow-up' : 'bi bi-arrow-down';
-            } else {
-                icon.className = 'bi bi-arrow-down-up';
-            }
-        });
-    }
-
-    // Event listeners
     searchInput.addEventListener('input', filterExercises);
-    typeFilter.addEventListener('change', filterExercises);
-    
-    document.querySelectorAll('.sortable').forEach(header => {
-        header.addEventListener('click', () => {
-            sortTable(header.dataset.sort);
-        });
-    });
-
-    // Initialize tooltips
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
+    categoryFilter.addEventListener('change', filterExercises);
+    subcategoryFilter.addEventListener('change', filterExercises);
+    favoritesOnly.addEventListener('change', filterExercises);
 });
 </script>
 {% endblock %} 

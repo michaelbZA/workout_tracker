@@ -31,9 +31,17 @@ class Exercise(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
-    category = db.Column(db.String(50), nullable=False)  # 'strength' or 'cardio'
+    category = db.Column(db.String(50), nullable=False)  # Main category (e.g., 'strength' or 'cardio')
+    subcategory = db.Column(db.String(50))  # Subcategory (e.g., 'chest', 'back', etc.)
+    form_instructions = db.Column(db.Text)  # Detailed form instructions
+    equipment_needed = db.Column(db.String(200))  # Required equipment
+    difficulty_level = db.Column(db.String(20))  # Beginner, Intermediate, Advanced
+    is_favorite = db.Column(db.Boolean, default=False)  # Favorite status
+    gif_url = db.Column(db.String(500))  # URL to exercise demonstration GIF
+    common_notes = db.Column(db.Text)  # Common mistakes and tips
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_used = db.Column(db.DateTime)  # Track when the exercise was last used
     
     workout_logs = db.relationship('WorkoutLog', backref='exercise', lazy='dynamic')
 

@@ -6,21 +6,55 @@ from wtforms.validators import DataRequired, Length, Optional, NumberRange # Opt
 class ExerciseForm(FlaskForm):
     name = StringField('Exercise Name',
                        validators=[DataRequired(), Length(min=2, max=100)])
-    description = TextAreaField('Description (Optional)',
-                                validators=[Length(max=200)])
-    category = SelectField('Category',
+    description = TextAreaField('Description',
+                              validators=[Length(max=500)],
+                              render_kw={"placeholder": "Brief description of the exercise"})
+    category = SelectField('Main Category',
                           choices=[
-                              ('chest', 'Chest'),
-                              ('back', 'Back'),
-                              ('shoulders', 'Shoulders'),
-                              ('arms', 'Arms'),
-                              ('legs', 'Legs'),
-                              ('core', 'Core'),
+                              ('strength', 'Strength Training'),
                               ('cardio', 'Cardio'),
+                              ('flexibility', 'Flexibility'),
                               ('other', 'Other')
                           ],
                           validators=[DataRequired()])
-    submit = SubmitField('Add Exercise')
+    subcategory = SelectField('Subcategory',
+                            choices=[
+                                ('chest', 'Chest'),
+                                ('back', 'Back'),
+                                ('shoulders', 'Shoulders'),
+                                ('arms', 'Arms'),
+                                ('legs', 'Legs'),
+                                ('core', 'Core'),
+                                ('full_body', 'Full Body'),
+                                ('running', 'Running'),
+                                ('cycling', 'Cycling'),
+                                ('swimming', 'Swimming'),
+                                ('yoga', 'Yoga'),
+                                ('stretching', 'Stretching'),
+                                ('other', 'Other')
+                            ],
+                            validators=[DataRequired()])
+    form_instructions = TextAreaField('Form Instructions',
+                                    validators=[Length(max=1000)],
+                                    render_kw={"placeholder": "Detailed instructions for proper form"})
+    equipment_needed = StringField('Equipment Needed',
+                                 validators=[Length(max=200)],
+                                 render_kw={"placeholder": "e.g., Dumbbells, Bench, Resistance Bands"})
+    difficulty_level = SelectField('Difficulty Level',
+                                 choices=[
+                                     ('beginner', 'Beginner'),
+                                     ('intermediate', 'Intermediate'),
+                                     ('advanced', 'Advanced')
+                                 ],
+                                 validators=[DataRequired()])
+    gif_url = StringField('Exercise GIF URL',
+                         validators=[Length(max=500), Optional()],
+                         render_kw={"placeholder": "URL to exercise demonstration GIF"})
+    common_notes = TextAreaField('Common Mistakes & Tips',
+                               validators=[Length(max=1000), Optional()],
+                               render_kw={"placeholder": "Common mistakes to avoid and helpful tips"})
+    is_favorite = BooleanField('Mark as Favorite')
+    submit = SubmitField('Save Exercise')
 
 class WorkoutLogForm(FlaskForm):
     # This field will be populated with choices from the database in the route
