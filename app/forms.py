@@ -8,8 +8,18 @@ class ExerciseForm(FlaskForm):
                        validators=[DataRequired(), Length(min=2, max=100)])
     description = TextAreaField('Description (Optional)',
                                 validators=[Length(max=200)])
-    category = StringField('Category (e.g., Chest, Legs, Cardio)',
-                           validators=[Length(max=50)])
+    category = SelectField('Category',
+                          choices=[
+                              ('chest', 'Chest'),
+                              ('back', 'Back'),
+                              ('shoulders', 'Shoulders'),
+                              ('arms', 'Arms'),
+                              ('legs', 'Legs'),
+                              ('core', 'Core'),
+                              ('cardio', 'Cardio'),
+                              ('other', 'Other')
+                          ],
+                          validators=[DataRequired()])
     submit = SubmitField('Add Exercise')
 
 class WorkoutLogForm(FlaskForm):

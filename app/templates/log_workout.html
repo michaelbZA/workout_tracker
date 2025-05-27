@@ -15,8 +15,7 @@
                         <div class="mb-4">
                             {{ form.exercise.label(class="form-label") }}
                             <div class="input-group">
-                                {{ form.exercise(class="form-select", required=true, data-bs-toggle="tooltip", 
-                                    title="Select the exercise you performed") }}
+                                {{ form.exercise(class="form-select", **{'required': 'true', 'data-bs-toggle': 'tooltip', 'title': 'Select the exercise you performed'}) }}
                                 <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#quickAddExerciseModal">
                                     <i class="bi bi-plus-lg"></i>
                                 </button>
@@ -39,9 +38,7 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         {{ form.sets.label(class="form-label") }}
-                                        {{ form.sets(class="form-control", size=5, min="1", max="20", 
-                                            placeholder="e.g., 3", required=false, data-bs-toggle="tooltip",
-                                            title="Number of sets performed") }}
+                                        {{ form.sets(class="form-control", **{'size': '5', 'min': '1', 'max': '20', 'placeholder': 'e.g., 3', 'data-bs-toggle': 'tooltip', 'title': 'Number of sets performed'}) }}
                                         <div class="form-text">Number of sets performed</div>
                                         {% for error in form.sets.errors %}
                                         <div class="invalid-feedback d-block">
@@ -52,9 +49,7 @@
 
                                     <div class="col-md-6 mb-3">
                                         {{ form.reps.label(class="form-label") }}
-                                        {{ form.reps(class="form-control", size=5, min="1", max="100", 
-                                            placeholder="e.g., 10", required=false, data-bs-toggle="tooltip",
-                                            title="Repetitions per set") }}
+                                        {{ form.reps(class="form-control", **{'size': '5', 'min': '1', 'max': '100', 'placeholder': 'e.g., 10', 'data-bs-toggle': 'tooltip', 'title': 'Repetitions per set'}) }}
                                         <div class="form-text">Repetitions per set</div>
                                         {% for error in form.reps.errors %}
                                         <div class="invalid-feedback d-block">
@@ -67,9 +62,7 @@
                                 <div class="mb-3">
                                     {{ form.weight.label(class="form-label") }}
                                     <div class="input-group">
-                                        {{ form.weight(class="form-control", size=10, min="0", step="0.1", 
-                                            placeholder="e.g., 20.5", required=false, data-bs-toggle="tooltip",
-                                            title="Weight used in your preferred unit") }}
+                                        {{ form.weight(class="form-control", **{'size': '10', 'min': '0', 'step': '0.1', 'placeholder': 'e.g., 20.5', 'data-bs-toggle': 'tooltip', 'title': 'Weight used in your preferred unit'}) }}
                                         <span class="input-group-text">kg</span>
                                     </div>
                                     <div class="form-text">Weight used in your preferred unit</div>
@@ -82,7 +75,7 @@
                             </div>
                         </div>
 
-                        <div class="card mb-4" id="cardioSection">
+                        <div class="card mb-4" id="cardioSection" style="display: none;">
                             <div class="card-header bg-light d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">Cardio Details</h5>
                                 <i class="bi bi-info-circle" data-bs-toggle="tooltip" 
@@ -93,9 +86,7 @@
                                     <div class="col-md-6 mb-3">
                                         {{ form.duration_minutes.label(class="form-label") }}
                                         <div class="input-group">
-                                            {{ form.duration_minutes(class="form-control", size=10, min="0", step="0.1", 
-                                                placeholder="e.g., 30", required=false, data-bs-toggle="tooltip",
-                                                title="Duration in minutes") }}
+                                            {{ form.duration_minutes(class="form-control", **{'size': '10', 'min': '0', 'step': '0.1', 'placeholder': 'e.g., 30', 'data-bs-toggle': 'tooltip', 'title': 'Duration in minutes'}) }}
                                             <span class="input-group-text">min</span>
                                         </div>
                                         <div class="form-text">Duration in minutes</div>
@@ -109,9 +100,7 @@
                                     <div class="col-md-6 mb-3">
                                         {{ form.distance_km.label(class="form-label") }}
                                         <div class="input-group">
-                                            {{ form.distance_km(class="form-control", size=10, min="0", step="0.01", 
-                                                placeholder="e.g., 5.2", required=false, data-bs-toggle="tooltip",
-                                                title="Distance in kilometers") }}
+                                            {{ form.distance_km(class="form-control", **{'size': '10', 'min': '0', 'step': '0.01', 'placeholder': 'e.g., 5.2', 'data-bs-toggle': 'tooltip', 'title': 'Distance in kilometers'}) }}
                                             <span class="input-group-text">km</span>
                                         </div>
                                         <div class="form-text">Distance in kilometers</div>
@@ -127,9 +116,7 @@
 
                         <div class="mb-4">
                             {{ form.notes.label(class="form-label") }}
-                            {{ form.notes(class="form-control", cols=35, rows=4, 
-                                placeholder="Add any notes about your workout (optional)", data-bs-toggle="tooltip",
-                                title="Optional notes about your workout") }}
+                            {{ form.notes(class="form-control", **{'cols': '35', 'rows': '4', 'placeholder': 'Add any notes about your workout (optional)', 'data-bs-toggle': 'tooltip', 'title': 'Optional notes about your workout'}) }}
                             <div class="form-text">Optional notes about your workout</div>
                             {% for error in form.notes.errors %}
                             <div class="invalid-feedback d-block">
@@ -195,7 +182,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to update form sections based on exercise type
     function updateFormSections() {
         const selectedOption = exerciseSelect.options[exerciseSelect.selectedIndex];
-        const isCardio = selectedOption.text.toLowerCase().includes('cardio');
+        const exerciseName = selectedOption.text.toLowerCase();
+        const isCardio = exerciseName.includes('run') || exerciseName.includes('cardio');
         
         if (isCardio) {
             strengthSection.style.display = 'none';

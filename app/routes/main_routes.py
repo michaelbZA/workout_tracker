@@ -6,114 +6,142 @@ from datetime import datetime, timedelta
 from . import main_bp
 
 @main_bp.route('/')
+@main_bp.route('/index')
 @login_required
 def index():
-    # Get recent workouts
-    recent_workouts = WorkoutLog.query.filter_by(user_id=current_user.id).order_by(WorkoutLog.date.desc()).limit(5).all()
+    # Get all exercises for the current user
+    exercises = Exercise.query.filter_by(user_id=current_user.id).order_by(Exercise.name).all()
     
-    # Get exercise stats
-    total_exercises = Exercise.query.filter_by(user_id=current_user.id).count()
-    total_workouts = WorkoutLog.query.filter_by(user_id=current_user.id).count()
-    
-    # Get personal bests
-    personal_bests = WorkoutLog.query.filter_by(user_id=current_user.id, is_pb=True).order_by(WorkoutLog.date.desc()).limit(5).all()
-    
-    # Get workout frequency
-    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
-    workouts_last_30_days = WorkoutLog.query.filter(
-        WorkoutLog.user_id == current_user.id,
-        WorkoutLog.date >= thirty_days_ago
-    ).count()
-
-    exercises = Exercise.query.order_by(Exercise.name).all()
-    workout_logs = WorkoutLog.query.join(Exercise).order_by(WorkoutLog.date.desc()).all()
-
-    personal_bests_for_bar_chart = {}
-    # Data for PB Comparison Bar Chart
-    pb_bar_chart_labels = []  # Exercise names
-    pb_bar_chart_e1rms = []   # e1RM values
-
-    for ex in exercises:
-        pb_data = {}
-        e1rm_value_for_bar_chart = None # Variable to hold e1RM if calculated
-
-        # Max Weight PB & Estimated 1RM
-        max_weight_log = WorkoutLog.query.filter(
-                                WorkoutLog.exercise_id == ex.id,
-                                WorkoutLog.weight.isnot(None)
-                            ).order_by(WorkoutLog.weight.desc(), WorkoutLog.date.desc()).first()
-        
-        if max_weight_log:
-            pb_data['max_weight'] = {
-                'value': max_weight_log.weight,
-                'date': max_weight_log.date,
-                'reps': max_weight_log.reps,
-                'sets': max_weight_log.sets
-            }
-            if max_weight_log.reps and max_weight_log.reps > 0:
-                weight = float(max_weight_log.weight)
-                reps = int(max_weight_log.reps)
-                if reps == 1:
-                    e1rm = weight
-                else:
-                    e1rm = weight * (1 + (reps / 30.0))
-                pb_data['e1rm'] = round(e1rm, 2)
-                e1rm_value_for_bar_chart = round(e1rm, 2) # Store for bar chart
-
-        # Longest Distance PB
-        is_cardio = ex.category and 'cardio' in ex.category.lower()
-        if is_cardio:
-            max_distance_log = WorkoutLog.query.filter(
-                                    WorkoutLog.exercise_id == ex.id,
-                                    WorkoutLog.distance_km.isnot(None)
-                                ).order_by(WorkoutLog.distance_km.desc(), WorkoutLog.date.desc()).first()
-            if max_distance_log:
-                pb_data['max_distance'] = {
-                    'value': max_distance_log.distance_km,
-                    'date': max_distance_log.date,
-                    'duration': max_distance_log.duration_minutes
+    # Get personal bests for each exercise
+    personal_bests = {}
+    for exercise in exercises:
+        if exercise.category == 'cardio':
+            # For cardio, find the longest distance
+            best_log = WorkoutLog.query.filter_by(
+                exercise_id=exercise.id
+            ).order_by(WorkoutLog.distance_km.desc()).first()
+            
+            if best_log and best_log.distance_km:
+                personal_bests[exercise.id] = {
+                    'value': best_log.distance_km,
+                    'unit': 'km',
+                    'date': best_log.date
                 }
+        else:
+            # For strength exercises, find the heaviest weight
+            best_log = WorkoutLog.query.filter_by(
+                exercise_id=exercise.id
+            ).order_by(WorkoutLog.weight.desc()).first()
+            
+            if best_log and best_log.weight:
+                personal_bests[exercise.id] = {
+                    'value': best_log.weight,
+                    'unit': 'kg',
+                    'date': best_log.date,
+                    'reps': best_log.reps
+                }
+    
+    # Group exercises by category
+    exercises_by_category = {}
+    for exercise in exercises:
+        if exercise.category not in exercises_by_category:
+            exercises_by_category[exercise.category] = []
+        exercises_by_category[exercise.category].append(exercise)
+    
+    # Sort categories to show strength categories first, then cardio
+    category_order = ['chest', 'back', 'shoulders', 'arms', 'legs', 'core', 'cardio', 'other']
+    sorted_categories = sorted(exercises_by_category.keys(), 
+                             key=lambda x: category_order.index(x) if x in category_order else len(category_order))
+    
+    # Get recent workout logs
+    recent_logs = WorkoutLog.query.join(Exercise).filter(
+        Exercise.user_id == current_user.id
+    ).order_by(WorkoutLog.date.desc()).limit(5).all()
+    
+    # Get workout statistics
+    total_workouts = WorkoutLog.query.join(Exercise).filter(
+        Exercise.user_id == current_user.id
+    ).count()
+    
+    # Calculate strength statistics
+    strength_logs = WorkoutLog.query.join(Exercise).filter(
+        Exercise.user_id == current_user.id,
+        Exercise.category != 'cardio'
+    ).all()
+    
+    total_sets = sum(log.sets or 0 for log in strength_logs)
+    total_weight = sum(log.weight or 0 for log in strength_logs)
+    strength_workouts = len([log for log in strength_logs if log.weight is not None])
+    avg_weight = total_weight / strength_workouts if strength_workouts > 0 else 0
+    
+    # Find most common strength exercise
+    exercise_counts = {}
+    for log in strength_logs:
+        if log.exercise.name not in exercise_counts:
+            exercise_counts[log.exercise.name] = 0
+        exercise_counts[log.exercise.name] += 1
+    most_common_exercise = max(exercise_counts.items(), key=lambda x: x[1])[0] if exercise_counts else "None"
+    
+    # Calculate cardio statistics
+    cardio_logs = WorkoutLog.query.join(Exercise).filter(
+        Exercise.user_id == current_user.id,
+        Exercise.category == 'cardio'
+    ).all()
+    
+    total_distance = sum(log.distance_km or 0 for log in cardio_logs)
+    total_duration = sum(log.duration_minutes or 0 for log in cardio_logs)
+    cardio_workouts = len([log for log in cardio_logs if log.distance_km is not None])
+    
+    # Calculate average pace (minutes per km)
+    avg_pace = total_duration / total_distance if total_distance > 0 else 0
+    
+    # Calculate average distance per session
+    avg_distance = total_distance / cardio_workouts if cardio_workouts > 0 else 0
+    
+    # Prepare data for the e1RM chart
+    strength_exercises = [e for e in exercises if e.category != 'cardio']
+    strength_exercises_with_data = []
+    strength_exercises_data = []
+    
+    for exercise in strength_exercises:
+        best_log = WorkoutLog.query.filter_by(
+            exercise_id=exercise.id
+        ).order_by(WorkoutLog.weight.desc()).first()
         
-        if pb_data:
-            personal_bests_for_bar_chart[ex.id] = pb_data
-            # If it's not a cardio exercise and has an e1RM, add it to our bar chart lists
-            if not is_cardio and e1rm_value_for_bar_chart is not None:
-                pb_bar_chart_labels.append(ex.name)
-                pb_bar_chart_e1rms.append(e1rm_value_for_bar_chart)
-
-    # Prepare data structure for Chart.js bar chart
+        if best_log and best_log.weight and best_log.reps:
+            # Calculate estimated 1RM
+            estimated_1rm = best_log.weight * (1 + (best_log.reps / 30.0))
+            strength_exercises_with_data.append(exercise)
+            strength_exercises_data.append(estimated_1rm)
+    
     pb_bar_chart_data = {
-        'labels': pb_bar_chart_labels,
+        'labels': [e.name for e in strength_exercises_with_data],
         'datasets': [{
-            'label': 'Estimated 1RM',
-            'data': pb_bar_chart_e1rms,
-            'backgroundColor': [
-                'rgba(255, 99, 132, 0.5)',
-                'rgba(54, 162, 235, 0.5)',
-                'rgba(255, 206, 86, 0.5)',
-                'rgba(75, 192, 192, 0.5)',
-                'rgba(153, 102, 255, 0.5)',
-                'rgba(255, 159, 64, 0.5)'
-            ],
-            'borderColor': [
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 159, 64, 1)'
-            ],
+            'label': 'Estimated 1RM (kg)',
+            'data': strength_exercises_data,
+            'backgroundColor': 'rgba(75, 192, 192, 0.6)',
+            'borderColor': 'rgba(75, 192, 192, 1)',
             'borderWidth': 1
         }]
     }
-    pb_bar_chart_data_json = json.dumps(pb_bar_chart_data)
-
+    
+    # Only show the chart if there are strength exercises with data
+    if not strength_exercises_with_data:
+        pb_bar_chart_data = None
+    
     return render_template('index.html',
-                         title='Dashboard',
-                         recent_workouts=recent_workouts,
-                         total_exercises=total_exercises,
-                         total_workouts=total_workouts,
+                         title='Home',
+                         exercises=exercises,
+                         exercises_by_category=exercises_by_category,
+                         sorted_categories=sorted_categories,
                          personal_bests=personal_bests,
-                         workouts_last_30_days=workouts_last_30_days,
-                         personal_bests_for_bar_chart=personal_bests_for_bar_chart,
-                         pb_bar_chart_data_json=pb_bar_chart_data_json) 
+                         recent_logs=recent_logs,
+                         total_workouts=total_workouts,
+                         total_sets=total_sets,
+                         avg_weight=avg_weight,
+                         most_common_exercise=most_common_exercise,
+                         total_distance=total_distance,
+                         total_duration=total_duration,
+                         avg_pace=avg_pace,
+                         avg_distance=avg_distance,
+                         pb_bar_chart_data_json=json.dumps(pb_bar_chart_data) if pb_bar_chart_data else None) 

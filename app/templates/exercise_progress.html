@@ -55,15 +55,15 @@
                 </div>
             </div>
         </div>
-    </div>
+            </div>
 
     <div class="row">
         <div class="col-md-6">
-            <div class="card">
+                <div class="card">
                 <div class="card-header">
                     <h2 class="h5 mb-0">Statistics</h2>
                 </div>
-                <div class="card-body">
+                    <div class="card-body">
                     <div id="statsContent">
                         <div class="text-center">
                             <div class="spinner-border text-primary" role="status">
@@ -202,10 +202,10 @@ document.addEventListener('DOMContentLoaded', function() {
             data: {
                 datasets: datasets
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
                     x: {
                         type: 'time',
                         time: {
@@ -214,9 +214,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                 day: 'MMM d'
                             }
                         },
-                        title: {
-                            display: true,
-                            text: 'Date'
+                            title: {
+                                display: true,
+                                text: 'Date'
                         }
                     },
                     y: {
@@ -226,9 +226,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             text: chartData.datasets[0].label
                         }
                     }
-                },
+                        },
                 plugins: {
-                    tooltip: {
+                        tooltip: {
                         callbacks: {
                             label: function(context) {
                                 return `${context.dataset.label}: ${context.parsed.y.toFixed(2)}`;
@@ -290,6 +290,6 @@ document.addEventListener('DOMContentLoaded', function() {
         link.click();
         document.body.removeChild(link);
     });
-});
+    });
 </script>
 {% endblock %}

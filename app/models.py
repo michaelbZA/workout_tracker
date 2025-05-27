@@ -36,7 +36,7 @@ class Exercise(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     workout_logs = db.relationship('WorkoutLog', backref='exercise', lazy='dynamic')
-    
+
     def __repr__(self):
         return f'<Exercise {self.name}>'
 
@@ -52,6 +52,6 @@ class WorkoutLog(db.Model):
     distance_km = db.Column(db.Float)  # for cardio exercises
     notes = db.Column(db.Text)
     is_pb = db.Column(db.Boolean, default=False)  # personal best flag
-    
+
     def __repr__(self):
         return f'<WorkoutLog {self.exercise.name} {self.date}>'

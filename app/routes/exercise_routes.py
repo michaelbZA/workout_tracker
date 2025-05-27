@@ -16,55 +16,47 @@ def list():
 @exercise.route('/exercises/add', methods=['GET', 'POST'])
 @login_required
 def add():
-    if request.method == 'POST':
-        name = request.form.get('name')
-        description = request.form.get('description')
-        category = request.form.get('category')
-        
-        if Exercise.query.filter_by(name=name, user_id=current_user.id).first():
-            flash('An exercise with this name already exists.', 'error')
-            return redirect(url_for('exercise.add'))
-        
+    form = ExerciseForm()
+    if form.validate_on_submit():
         exercise = Exercise(
-            name=name,
-            description=description,
-            category=category,
+            name=form.name.data,
+            description=form.description.data,
+            category=form.category.data,
             user_id=current_user.id
         )
-        
         db.session.add(exercise)
         db.session.commit()
-        
         flash('Exercise added successfully!', 'success')
         return redirect(url_for('exercise.list'))
-    
-    return render_template('exercise_add.html', title='Add Exercise')
+    return render_template('add_exercise.html', title='Add Exercise', form=form)
 
 @exercise.route('/exercises/<int:id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit(id):
     exercise = Exercise.query.filter_by(id=id, user_id=current_user.id).first_or_404()
+    form = ExerciseForm()
     
-    if request.method == 'POST':
-        name = request.form.get('name')
-        description = request.form.get('description')
-        category = request.form.get('category')
-        
-        existing = Exercise.query.filter_by(name=name, user_id=current_user.id).first()
+    if request.method == 'GET':
+        form.name.data = exercise.name
+        form.description.data = exercise.description
+        form.category.data = exercise.category
+    
+    if form.validate_on_submit():
+        existing = Exercise.query.filter_by(name=form.name.data, user_id=current_user.id).first()
         if existing and existing.id != id:
             flash('An exercise with this name already exists.', 'error')
             return redirect(url_for('exercise.edit', id=id))
         
-        exercise.name = name
-        exercise.description = description
-        exercise.category = category
+        exercise.name = form.name.data
+        exercise.description = form.description.data
+        exercise.category = form.category.data
         
         db.session.commit()
         
         flash('Exercise updated successfully!', 'success')
         return redirect(url_for('exercise.list'))
     
-    return render_template('exercise_edit.html', title='Edit Exercise', exercise=exercise)
+    return render_template('edit_exercise.html', title='Edit Exercise', exercise=exercise, form=form)
 
 @exercise.route('/exercises/<int:id>/delete', methods=['POST'])
 @login_required

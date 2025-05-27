@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                    <li class="breadcrumb-item active">Workout History</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h1 class="h3 mb-0">Workout History</h1>
+                    <a href="{{ url_for('workout.log') }}" class="btn btn-light btn-sm">
+                        <i class="bi bi-plus-lg"></i> Log Workout
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Exercise</th>
+                                    <th>Details</th>
+                                    <th>Notes</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in logs %}
+                                <tr>
+                                    <td>{{ log.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>{{ log.exercise.name }}</td>
+                                    <td>
+                                        {% if log.exercise.category and 'cardio' in log.exercise.category.lower() %}
+                                            {% if log.duration_minutes %}
+                                                {{ log.duration_minutes }} min
+                                            {% endif %}
+                                            {% if log.distance_km %}
+                                                {% if log.duration_minutes %} - {% endif %}
+                                                {{ log.distance_km }} km
+                                            {% endif %}
+                                        {% else %}
+                                            {% if log.sets and log.reps %}
+                                                {{ log.sets }}x{{ log.reps }}
+                                            {% endif %}
+                                            {% if log.weight %}
+                                                {% if log.sets and log.reps %} @ {% endif %}
+                                                {{ log.weight }} kg
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ log.notes }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('workout.edit', log_id=log.id) }}" 
+                                               class="btn btn-outline-secondary" 
+                                               data-bs-toggle="tooltip" 
+                                               title="Edit Workout">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <button type="button" 
+                                                    class="btn btn-outline-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deleteModal{{ log.id }}"
+                                                    title="Delete Workout">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+
+                                        <!-- Delete Modal -->
+                                        <div class="modal fade" id="deleteModal{{ log.id }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Delete Workout</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        Are you sure you want to delete this workout log? This action cannot be undone.
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <form action="{{ url_for('workout.delete', id=log.id) }}" method="POST" class="d-inline">
+                                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

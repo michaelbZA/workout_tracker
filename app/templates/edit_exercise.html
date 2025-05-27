@@ -9,7 +9,7 @@
                     <h1 class="h3 mb-0">{{ title }}</h1>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ url_for('main.edit_exercise', exercise_id=exercise_id) }}" novalidate>
+                    <form method="POST" action="{{ url_for('exercise.edit', id=exercise.id) }}" novalidate>
                         {{ form.hidden_tag() }}
 
                         <div class="mb-3">
@@ -34,7 +34,7 @@
 
                         <div class="mb-3">
                             {{ form.category.label(class="form-label") }}
-                            {{ form.category(class="form-control", size=32) }}
+                            {{ form.category(class="form-select") }}
                             {% for error in form.category.errors %}
                             <div class="invalid-feedback d-block">
                                 {{ error }}
@@ -44,7 +44,7 @@
 
                         <div class="d-flex gap-2">
                             {{ form.submit(value='Update Exercise', class="btn btn-primary") }}
-                            <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">Cancel</a>
+                            <a href="{{ url_for('exercise.list') }}" class="btn btn-outline-secondary">Cancel</a>
                         </div>
                     </form>
                 </div>
