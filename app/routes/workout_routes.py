@@ -3,8 +3,8 @@ from flask_login import login_required, current_user
 from app import db
 from app.models import Exercise, WorkoutLog, WorkoutPlan, PlannedExercise
 from app.forms import WorkoutLogForm, WorkoutPlanForm, PlannedExerciseForm
-from datetime import datetime
-from sqlalchemy import and_
+from datetime import datetime, timedelta
+from sqlalchemy import and_, func
 from . import workout_bp as workout
 
 @workout.route('/log', methods=['GET', 'POST'])
@@ -551,4 +551,90 @@ def edit_workout_plan(plan_id):
         flash('Workout plan updated successfully!', 'success')
         return redirect(url_for('workout.view_workout_plan', plan_id=plan_id))
     
-    return render_template('workout/edit_plan.html', form=form, plan=plan) 
+    return render_template('workout/edit_plan.html', form=form, plan=plan)
+
+@workout.route('/dashboard')
+@login_required
+def dashboard():
+    # Get user's workout data
+    user_id = current_user.id
+    
+    # Get total workouts
+    total_workouts = WorkoutLog.query.filter_by(user_id=user_id).count()
+    
+    # Get workouts this month
+    from datetime import datetime, timedelta
+    first_day_of_month = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    workouts_this_month = WorkoutLog.query.filter(
+        WorkoutLog.user_id == user_id,
+        WorkoutLog.date >= first_day_of_month
+    ).count()
+    
+    # Get personal records
+    personal_records = WorkoutLog.query.filter_by(
+        user_id=user_id,
+        is_pb=True
+    ).order_by(WorkoutLog.date.desc()).limit(5).all()
+    
+    # Get recent workouts
+    recent_workouts = WorkoutLog.query.filter_by(
+        user_id=user_id
+    ).order_by(WorkoutLog.date.desc()).limit(5).all()
+    
+    # Get workout frequency by day of week
+    workout_frequency = db.session.query(
+        func.extract('dow', WorkoutLog.date).label('day_of_week'),
+        func.count(WorkoutLog.id).label('count')
+    ).filter(
+        WorkoutLog.user_id == user_id
+    ).group_by('day_of_week').all()
+    
+    # Get exercise distribution by category
+    exercise_distribution = db.session.query(
+        Exercise.category,
+        func.count(WorkoutLog.id).label('count')
+    ).join(
+        WorkoutLog,
+        WorkoutLog.exercise_id == Exercise.id
+    ).filter(
+        WorkoutLog.user_id == user_id
+    ).group_by(Exercise.category).all()
+    
+    # Get active workout plan
+    active_plan = WorkoutPlan.query.filter_by(
+        user_id=user_id,
+        is_active=True
+    ).first()
+    
+    # Get workout trend (last 7 days)
+    last_7_days = datetime.utcnow() - timedelta(days=7)
+    workout_trend = db.session.query(
+        func.strftime('%Y-%m-%d', WorkoutLog.date).label('date'),
+        func.count(WorkoutLog.id).label('count')
+    ).filter(
+        WorkoutLog.user_id == user_id,
+        WorkoutLog.date >= last_7_days
+    ).group_by('date').order_by('date').all()
+    
+    # Get total volume (weight × reps × sets) for strength exercises
+    total_volume = db.session.query(
+        func.sum(WorkoutLog.weight * WorkoutLog.reps * WorkoutLog.sets)
+    ).join(
+        Exercise,
+        WorkoutLog.exercise_id == Exercise.id
+    ).filter(
+        WorkoutLog.user_id == user_id,
+        Exercise.category.in_(['arms', 'chest', 'back', 'legs', 'shoulders', 'core'])
+    ).scalar() or 0
+    
+    return render_template('workout/dashboard.html',
+                         title='Dashboard',
+                         total_workouts=total_workouts,
+                         workouts_this_month=workouts_this_month,
+                         personal_records=personal_records,
+                         recent_workouts=recent_workouts,
+                         workout_frequency=workout_frequency,
+                         exercise_distribution=exercise_distribution,
+                         active_plan=active_plan,
+                         workout_trend=workout_trend,
+                         total_volume=total_volume) 

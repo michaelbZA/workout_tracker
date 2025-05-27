@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('workout.log') }}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle"></i> Log Workout
+                        </a>
+                        <a href="{{ url_for('workout.workout_plans') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-dumbbell"></i> View Plans
+                        </a>
+                        <a href="{{ url_for('workout.history') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-history"></i> Workout History
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Row -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total Workouts</h6>
+                            <h2 class="mb-0">{{ total_workouts }}</h2>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-dumbbell text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">This Month</h6>
+                            <h2 class="mb-0">{{ workouts_this_month }}</h2>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-calendar-check text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total Volume</h6>
+                            <h2 class="mb-0">{{ (total_volume / 1000)|round(1) }}k kg</h2>
+                        </div>
+                        <div class="bg-info bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-weight text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Active Plan</h6>
+                            <h2 class="mb-0">{{ 'Yes' if active_plan else 'No' }}</h2>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-clipboard-list text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Workout Trend (Last 7 Days)</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="workoutTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Exercise Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="exerciseDistributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Row -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Recent Workouts</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for workout in recent_workouts %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ workout.exercise.name }}</h6>
+                                    <p class="mb-1 text-muted small">
+                                        {% if workout.exercise.category in ['arms', 'chest', 'back', 'legs', 'shoulders', 'core'] %}
+                                            {{ workout.sets }} sets × {{ workout.reps }} reps @ {{ workout.weight }}kg
+                                        {% else %}
+                                            {% if workout.duration_minutes %}
+                                                {{ workout.duration_minutes }} minutes
+                                            {% endif %}
+                                            {% if workout.distance_km %}
+                                                {{ workout.distance_km }}km
+                                            {% endif %}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted">{{ workout.date.strftime('%Y-%m-%d') }}</small>
+                                    {% if workout.is_pb %}
+                                    <span class="badge bg-success ms-2">PB</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Personal Records</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for record in personal_records %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ record.exercise.name }}</h6>
+                                    <p class="mb-1 text-muted small">
+                                        {% if record.exercise.category in ['arms', 'chest', 'back', 'legs', 'shoulders', 'core'] %}
+                                            {{ record.weight }}kg
+                                        {% else %}
+                                            {% if record.distance_km %}
+                                                {{ record.distance_km }}km
+                                            {% endif %}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <small class="text-muted">{{ record.date.strftime('%Y-%m-%d') }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Workout Trend Chart
+    const trendCtx = document.getElementById('workoutTrendChart').getContext('2d');
+    const trendData = {
+        labels: [
+            {% for date, count in workout_trend %}
+                '{{ date }}'{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ],
+        datasets: [{
+            label: 'Workouts',
+            data: [
+                {% for date, count in workout_trend %}
+                    {{ count }}{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ],
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.1,
+            fill: true,
+            backgroundColor: 'rgba(75, 192, 192, 0.1)'
+        }]
+    };
+
+    new Chart(trendCtx, {
+        type: 'line',
+        data: trendData,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    // Exercise Distribution Chart
+    const distributionCtx = document.getElementById('exerciseDistributionChart').getContext('2d');
+    const distributionData = {
+        labels: [
+            {% for category, count in exercise_distribution %}
+                '{{ category }}'{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ],
+        datasets: [{
+            data: [
+                {% for category, count in exercise_distribution %}
+                    {{ count }}{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.8)',
+                'rgba(54, 162, 235, 0.8)',
+                'rgba(255, 206, 86, 0.8)',
+                'rgba(75, 192, 192, 0.8)',
+                'rgba(153, 102, 255, 0.8)',
+                'rgba(255, 159, 64, 0.8)'
+            ],
+            borderWidth: 0
+        }]
+    };
+
+    new Chart(distributionCtx, {
+        type: 'doughnut',
+        data: distributionData,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            },
+            cutout: '70%'
+        }
+    });
+});
+</script>
+{% endblock %} 
