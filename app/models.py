@@ -56,4 +56,38 @@ class WorkoutLog(db.Model):
     pr_description = db.Column(db.Text)  # Description of the PR achievement
 
     def __repr__(self):
-        return f'<WorkoutLog {self.exercise.name} {self.date}>'
+        exercise_name = self.exercise.name if self.exercise else f"Exercise {self.exercise_id}"
+        return f'<WorkoutLog {exercise_name} {self.date}>'
+
+class WorkoutPlan(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_active = db.Column(db.Boolean, default=True)
+    
+    # Relationships
+    user = db.relationship('User', backref='workout_plans')
+    planned_exercises = db.relationship('PlannedExercise', backref='workout_plan', lazy='dynamic', cascade='all, delete-orphan')
+    
+    def __repr__(self):
+        return f'<WorkoutPlan {self.name}>'
+
+class PlannedExercise(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    workout_plan_id = db.Column(db.Integer, db.ForeignKey('workout_plan.id'), nullable=False)
+    exercise_id = db.Column(db.Integer, db.ForeignKey('exercise.id'), nullable=False)
+    target_sets = db.Column(db.Integer)
+    target_reps = db.Column(db.Integer)
+    target_weight = db.Column(db.Float)  # in kg
+    target_duration = db.Column(db.Integer)  # in minutes
+    target_distance = db.Column(db.Float)  # in km
+    order = db.Column(db.Integer)  # For ordering exercises in the plan
+    notes = db.Column(db.Text)
+    
+    # Relationships
+    exercise = db.relationship('Exercise')
+    
+    def __repr__(self):
+        return f'<PlannedExercise {self.exercise.name} in {self.workout_plan.name}>'

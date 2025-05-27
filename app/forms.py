@@ -36,3 +36,19 @@ class WorkoutLogForm(FlaskForm):
     is_pr = BooleanField('Mark as Personal Record (Other Achievement)')
     pr_description = TextAreaField('PR Description (Optional)', validators=[Length(max=200)])
     submit = SubmitField('Log Workout')
+
+class WorkoutPlanForm(FlaskForm):
+    name = StringField('Plan Name', validators=[DataRequired()])
+    description = TextAreaField('Description')
+    submit = SubmitField('Create Plan')
+
+class PlannedExerciseForm(FlaskForm):
+    exercise = SelectField('Exercise', coerce=int, validators=[DataRequired()])
+    target_sets = IntegerField('Target Sets')
+    target_reps = IntegerField('Target Reps')
+    target_weight = FloatField('Target Weight (kg)')
+    target_duration = IntegerField('Target Duration (minutes)')
+    target_distance = FloatField('Target Distance (km)')
+    order = IntegerField('Order in Plan')
+    notes = TextAreaField('Notes')
+    submit = SubmitField('Add Exercise')
