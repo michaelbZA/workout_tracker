@@ -205,21 +205,65 @@ def workout_plans():
     plans = WorkoutPlan.query.filter_by(user_id=current_user.id).order_by(WorkoutPlan.created_at.desc()).all()
     return render_template('workout/plans.html', plans=plans)
 
+@workout.route('/templates')
+@login_required
+def templates():
+    """View all workout templates"""
+    templates = WorkoutPlan.query.filter_by(
+        user_id=current_user.id,
+        is_template=True
+    ).order_by(WorkoutPlan.name).all()
+    return render_template('workout_templates.html', title='Workout Templates', templates=templates)
+
+@workout.route('/templates/<int:template_id>/use', methods=['POST'])
+@login_required
+def use_template(template_id):
+    """Create a new workout plan from a template"""
+    template = WorkoutPlan.query.filter_by(
+        id=template_id,
+        user_id=current_user.id,
+        is_template=True
+    ).first_or_404()
+    
+    # Create new plan from template
+    new_plan = template.create_from_template(template)
+    db.session.add(new_plan)
+    db.session.commit()
+    
+    flash('New workout plan created from template!', 'success')
+    return redirect(url_for('workout.view_plan', plan_id=new_plan.id))
+
 @workout.route('/plans/create', methods=['GET', 'POST'])
 @login_required
-def create_workout_plan():
+def create_plan():
+    """Create a new workout plan or template"""
     form = WorkoutPlanForm()
+    
     if form.validate_on_submit():
         plan = WorkoutPlan(
             name=form.name.data,
             description=form.description.data,
-            user_id=current_user.id
+            user_id=current_user.id,
+            is_template=form.is_template.data,
+            template_category=form.template_category.data if form.is_template.data else None,
+            difficulty_level=form.difficulty_level.data,
+            estimated_duration=form.estimated_duration.data,
+            equipment_needed=form.equipment_needed.data,
+            target_muscle_groups=form.target_muscle_groups.data,
+            notes=form.notes.data
         )
+        
         db.session.add(plan)
         db.session.commit()
-        flash('Workout plan created successfully!', 'success')
-        return redirect(url_for('workout.workout_plans'))
-    return render_template('workout/create_plan.html', form=form)
+        
+        if form.is_template.data:
+            flash('Workout template created successfully!', 'success')
+            return redirect(url_for('workout.templates'))
+        else:
+            flash('Workout plan created successfully!', 'success')
+            return redirect(url_for('workout.view_plan', plan_id=plan.id))
+    
+    return render_template('create_plan.html', title='Create Workout Plan', form=form)
 
 @workout.route('/plans/<int:plan_id>')
 @login_required

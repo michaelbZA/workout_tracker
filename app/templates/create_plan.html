@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('workout.workout_plans') }}">Workout Plans</a></li>
+                    <li class="breadcrumb-item active">Create Plan</li>
+                </ol>
+            </nav>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="h3 mb-0">Create Workout Plan</h1>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('workout.create_plan') }}" novalidate>
+                        {{ form.hidden_tag() }}
+
+                        <div class="mb-4">
+                            {{ form.name.label(class="form-label fw-bold") }}
+                            {{ form.name(class="form-control form-control-lg", placeholder="Enter plan name") }}
+                            {% for error in form.name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ error }}
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-4">
+                            {{ form.description.label(class="form-label fw-bold") }}
+                            {{ form.description(class="form-control", rows=3, placeholder="Describe your workout plan") }}
+                            {% for error in form.description.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ error }}
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                {{ form.template_category.label(class="form-label fw-bold") }}
+                                {{ form.template_category(class="form-select form-select-lg") }}
+                                {% for error in form.template_category.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.difficulty_level.label(class="form-label fw-bold") }}
+                                {{ form.difficulty_level(class="form-select form-select-lg") }}
+                                {% for error in form.difficulty_level.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                {{ form.estimated_duration.label(class="form-label fw-bold") }}
+                                {{ form.estimated_duration(class="form-control form-control-lg", placeholder="e.g., 60") }}
+                                {% for error in form.estimated_duration.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.equipment_needed.label(class="form-label fw-bold") }}
+                                {{ form.equipment_needed(class="form-control form-control-lg") }}
+                                {% for error in form.equipment_needed.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            {{ form.target_muscle_groups.label(class="form-label fw-bold") }}
+                            {{ form.target_muscle_groups(class="form-control form-control-lg") }}
+                            {% for error in form.target_muscle_groups.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ error }}
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-4">
+                            {{ form.notes.label(class="form-label fw-bold") }}
+                            {{ form.notes(class="form-control", rows=3, placeholder="Additional notes about the plan") }}
+                            {% for error in form.notes.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ error }}
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check">
+                                {{ form.is_template(class="form-check-input") }}
+                                {{ form.is_template.label(class="form-check-label") }}
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                            <a href="{{ url_for('workout.workout_plans') }}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -74,6 +74,13 @@ class WorkoutPlan(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
+    is_template = db.Column(db.Boolean, default=False)  # Whether this is a template
+    template_category = db.Column(db.String(50))  # e.g., 'Full Body', 'Upper Body', 'Cardio'
+    difficulty_level = db.Column(db.String(20))  # Beginner, Intermediate, Advanced
+    estimated_duration = db.Column(db.Integer)  # Estimated duration in minutes
+    equipment_needed = db.Column(db.String(200))  # Required equipment
+    target_muscle_groups = db.Column(db.String(200))  # Target muscle groups
+    notes = db.Column(db.Text)  # Additional notes about the plan
     
     # Relationships
     user = db.relationship('User', backref='workout_plans')
@@ -81,6 +88,37 @@ class WorkoutPlan(db.Model):
     
     def __repr__(self):
         return f'<WorkoutPlan {self.name}>'
+
+    def create_from_template(self, template):
+        """Create a new workout plan from a template"""
+        new_plan = WorkoutPlan(
+            name=f"{template.name} - {datetime.utcnow().strftime('%Y-%m-%d')}",
+            description=template.description,
+            user_id=self.user_id,
+            is_template=False,
+            template_category=template.template_category,
+            difficulty_level=template.difficulty_level,
+            estimated_duration=template.estimated_duration,
+            equipment_needed=template.equipment_needed,
+            target_muscle_groups=template.target_muscle_groups,
+            notes=template.notes
+        )
+        
+        # Copy planned exercises
+        for planned_ex in template.planned_exercises:
+            new_planned_ex = PlannedExercise(
+                exercise_id=planned_ex.exercise_id,
+                target_sets=planned_ex.target_sets,
+                target_reps=planned_ex.target_reps,
+                target_weight=planned_ex.target_weight,
+                target_duration=planned_ex.target_duration,
+                target_distance=planned_ex.target_distance,
+                order=planned_ex.order,
+                notes=planned_ex.notes
+            )
+            new_plan.planned_exercises.append(new_planned_ex)
+        
+        return new_plan
 
 class PlannedExercise(db.Model):
     id = db.Column(db.Integer, primary_key=True)

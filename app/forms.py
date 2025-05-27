@@ -74,6 +74,35 @@ class WorkoutLogForm(FlaskForm):
 class WorkoutPlanForm(FlaskForm):
     name = StringField('Plan Name', validators=[DataRequired()])
     description = TextAreaField('Description')
+    is_template = BooleanField('Save as Template')
+    template_category = SelectField('Template Category',
+                                  choices=[
+                                      ('full_body', 'Full Body'),
+                                      ('upper_body', 'Upper Body'),
+                                      ('lower_body', 'Lower Body'),
+                                      ('push', 'Push'),
+                                      ('pull', 'Pull'),
+                                      ('cardio', 'Cardio'),
+                                      ('hiit', 'HIIT'),
+                                      ('strength', 'Strength'),
+                                      ('flexibility', 'Flexibility'),
+                                      ('other', 'Other')
+                                  ])
+    difficulty_level = SelectField('Difficulty Level',
+                                 choices=[
+                                     ('beginner', 'Beginner'),
+                                     ('intermediate', 'Intermediate'),
+                                     ('advanced', 'Advanced')
+                                 ])
+    estimated_duration = IntegerField('Estimated Duration (minutes)',
+                                    validators=[Optional(), NumberRange(min=0)])
+    equipment_needed = StringField('Equipment Needed',
+                                 validators=[Length(max=200)],
+                                 render_kw={"placeholder": "e.g., Dumbbells, Bench, Resistance Bands"})
+    target_muscle_groups = StringField('Target Muscle Groups',
+                                     validators=[Length(max=200)],
+                                     render_kw={"placeholder": "e.g., Chest, Back, Legs"})
+    notes = TextAreaField('Additional Notes')
     submit = SubmitField('Create Plan')
 
 class PlannedExerciseForm(FlaskForm):
