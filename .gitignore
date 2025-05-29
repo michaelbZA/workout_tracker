@@ -69,3 +69,18 @@ yarn-error.log*
 
 # Local development
 local_settings.py
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Docker
+.docker/
+docker-compose.override.yml
+*.env.docker
+
+# Documentation
+docs/_build/
+site/
+.mkdocs/
